@@ -261,6 +261,10 @@ export const ayo: GameDef<AyoState, AyoMove, AyoConfig> = {
   view(state) {
     return state; // nothing is hidden in Ayo
   },
+  random(state, player, { rng }) {
+    const moves = legalPits(state, state.players.indexOf(player) as 0 | 1);
+    return moves.length ? { pit: rng.pick(moves) } : null;
+  },
   bot(state, player, level, ctx: Ctx) {
     const me = state.players.indexOf(player) as 0 | 1;
     const moves = legalPits(state, me);

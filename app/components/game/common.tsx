@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import type { Seat } from '~/lib/stage';
 import { firstName } from '~/lib/stage';
+import { play } from '~/lib/sound';
 import { Avatar } from '../Avatar';
 
 /** Re-renders on an interval and returns the current (server) time. */
@@ -51,6 +52,10 @@ export function PlayerChip({
   const t = useClock(now ?? Date.now, 250, !!(active && deadline));
   const left = active && deadline && total ? Math.max(0, Math.min(1, (deadline - t) / (total * 1000))) : 1;
   const secs = active && deadline ? Math.max(0, Math.ceil((deadline - t) / 1000)) : null;
+  // Last five seconds of your own turn: a soft tick so you notice.
+  useEffect(() => {
+    if (me && secs !== null && secs > 0 && secs <= 5) play('tick');
+  }, [me, secs]);
   return (
     <div className={`chip-player${active ? ' on' : ''}${align === 'right' ? ' r' : ''}`} style={colour ? ({ ['--pc' as string]: colour } as React.CSSProperties) : undefined}>
       <span className="ring" style={{ background: active ? `conic-gradient(var(--pc, var(--brass)) ${left * 360}deg, rgba(255,255,255,.08) 0)` : undefined }}>
@@ -63,7 +68,7 @@ export function PlayerChip({
         </b>
         <small>
           {!seat.connected ? 'reconnecting…' : sub}
-          {secs !== null && secs <= 10 && <span className="hurry"> {secs}s</span>}
+          {secs !== null && <span className={`clock${secs <= 10 ? ' hurry' : ''}`}>{secs}s</span>}
         </small>
       </span>
       {score !== undefined && <span className="pts">{score}</span>}

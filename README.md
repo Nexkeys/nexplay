@@ -18,6 +18,8 @@ Made by NexKeys Agency.
 3. When the host starts, the host's device runs the match (`app/lib/host.ts`). Players send moves to `rooms/{code}/moves`, which only the host can read. The host checks every move with the game engine and publishes a spectator view plus a private view for each player, so nobody can see another player's cards or answers.
 4. If the host disconnects for five seconds, the next player in seat order takes over from the saved state and the game carries on.
 5. Rock Paper Scissors picks are sealed with a SHA 256 fingerprint and revealed together.
+6. Turn based games always have a turn timer (15, 30 or 60 seconds). When it runs out, or a player has been disconnected for a while, a random legal move is played for them and everyone is told.
+7. Rooms expire. An invite code nobody joins closes after 15 minutes. While players are around, the host's device refreshes the room every 20 seconds; once everyone has closed their tabs the room closes 5 minutes later. Expired rooms are listed in `roomIndex` and any signed in player clears a few of them when they open the play screen (the rules only allow deleting a room once it has expired).
 
 Game rules live in `app/engine/games`, one pure state machine per game, with tests in `tests/`.
 

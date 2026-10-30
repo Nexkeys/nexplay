@@ -1,4 +1,4 @@
-import { seo } from '~/lib/seo';
+import { AGENCY_URL, seo } from '~/lib/seo';
 import { Legal } from './legal';
 
 export function meta() {
@@ -34,6 +34,15 @@ export default function Terms() {
       <h2>Privacy</h2>
       <p>
         How we handle your data is explained on the <a href="/privacy">privacy page</a>.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about these terms? Reach NexKeys Agency at{' '}
+        <a href={AGENCY_URL} target="_blank" rel="noopener">
+          nexkeysagency.com.ng
+        </a>
+        .
       </p>
 
       <h2>Changes</h2>

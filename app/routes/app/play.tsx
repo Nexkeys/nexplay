@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { GameArt } from '~/components/GameArt';
 import { Icon } from '~/components/Icon';
 import { GAMES, gameMeta, type GameMeta } from '~/engine/catalog';
 import type { GameId } from '~/engine/types';
 import { useIdentity } from '~/lib/identity';
-import { CODE_LENGTH, createRoom, isCode, normaliseCode } from '~/lib/rooms';
+import { CODE_LENGTH, createRoom, isCode, normaliseCode, sweepExpiredRooms } from '~/lib/rooms';
 import { dailyGame } from '~/lib/stats';
 import { useProfile } from './layout';
 
@@ -27,6 +27,11 @@ export default function Play() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const daily = gameMeta(dailyGame())!;
+
+  // Tidy up: clear a few rooms whose time is up whenever someone opens the hub.
+  useEffect(() => {
+    if (id.uid) sweepExpiredRooms().catch(() => {});
+  }, [id.uid]);
   const today = new Date().toISOString().slice(0, 10);
   const dailyDone = !!profile?.daily?.[today];
 

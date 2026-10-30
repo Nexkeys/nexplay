@@ -1,6 +1,10 @@
 import {
+  endAt,
   get,
+  limitToFirst,
   onDisconnect,
+  orderByValue,
+  query,
   push,
   ref,
   remove,
@@ -27,6 +31,13 @@ export function randomCode(): string {
 
 export type RoomStatus = 'lobby' | 'playing' | 'ended';
 
+/** An invite code that nobody uses closes after this long. */
+export const INVITE_TTL = 15 * 60_000;
+/** Once everyone has gone (tabs closed, network gone), a room closes after this long. */
+export const IDLE_TTL = 5 * 60_000;
+/** How often the host tells the database the room is still in use. */
+export const HEARTBEAT_MS = 20_000;
+
 export interface RoomMeta {
   code: string;
   game: GameId;
@@ -40,6 +51,10 @@ export interface RoomMeta {
   match: number;
   quick?: boolean;
   visibility: 'private' | 'public';
+  /** When the room closes unless someone is still around to keep it open. */
+  expiresAt: number;
+  /** True once a second person has joined, so the invite timer no longer applies. */
+  everJoined?: boolean;
 }
 
 export interface RoomPlayer {
@@ -66,6 +81,7 @@ export interface PublicState {
 }
 
 const roomRef = (code: string, path = '') => ref(db(), `rooms/${code}${path ? `/${path}` : ''}`);
+const indexRef = (code: string) => ref(db(), `roomIndex/${code}`);
 
 export async function createRoom(opts: {
   uid: string;
@@ -94,12 +110,13 @@ export async function createRoom(opts: {
         turnSeconds: 30,
         match: 0,
         quick: opts.quick ?? false,
-        visibility: 'private'
+        visibility: 'private',
+        expiresAt: serverNow() + INVITE_TTL
       };
       return fresh;
     });
     if (!result.committed) continue;
-    await set(roomRef(code, `players/${opts.uid}`), playerRecord(opts.name, opts.avatar, 0));
+    await Promise.all([set(roomRef(code, `players/${opts.uid}`), playerRecord(opts.name, opts.avatar, 0)), set(indexRef(code), serverNow() + INVITE_TTL)]);
     return code;
   }
   throw new Error('Could not create a room. Try again.');
@@ -116,13 +133,25 @@ const playerRecord = (name: string, avatar: string, seat: number, bot: BotLevel 
   joinedAt: serverNow()
 });
 
-export type JoinResult = 'joined' | 'spectating' | 'full' | 'missing';
+export type JoinResult = 'joined' | 'spectating' | 'full' | 'missing' | 'expired';
+
+export const isExpired = (meta: Pick<RoomMeta, 'expiresAt'> | null) => !!meta?.expiresAt && serverNow() > meta.expiresAt;
+
+/** Deletes a room whose time is up. The database rules allow anyone to do this once it has expired. */
+export async function closeRoom(code: string) {
+  await remove(roomRef(code)).catch(() => {});
+  await remove(indexRef(code)).catch(() => {});
+}
 
 export async function joinRoom(code: string, uid: string, name: string, avatar: string): Promise<JoinResult> {
   // Read meta and players separately: the rules do not allow reading a whole room at once.
   const [metaSnap, playersSnap] = await Promise.all([get(roomRef(code, 'meta')), get(roomRef(code, 'players'))]);
   const room = { meta: metaSnap.val() as RoomMeta | null };
   if (!room.meta) return 'missing';
+  if (isExpired(room.meta)) {
+    await closeRoom(code);
+    return 'expired';
+  }
   const players = (playersSnap.val() ?? {}) as Record<string, RoomPlayer>;
   if (players[uid]) {
     await update(roomRef(code, `players/${uid}`), { connected: true, name });
@@ -164,6 +193,7 @@ export async function leaveRoom(code: string, uid: string, meta: RoomMeta | null
   if (meta && meta.hostUid === uid) {
     if (!humans.length) {
       await remove(roomRef(code));
+      await remove(indexRef(code)).catch(() => {});
       return;
     }
     const next = humans.sort((a, b) => a[1].seat - b[1].seat)[0][0];
@@ -197,6 +227,32 @@ export const sendEmote = (code: string, uid: string, e: string) => push(roomRef(
 /** Takes over as host when the current host has gone quiet. Only succeeds for one player. */
 export async function claimHost(code: string, uid: string, previousHost: string) {
   await runTransaction(roomRef(code, 'meta/hostUid'), (current) => (current === previousHost ? uid : undefined));
+}
+
+/**
+ * Run by the host every few seconds. While the host is here the room stays open. A lobby where
+ * nobody else has ever joined keeps its original invite deadline, so unused codes still close.
+ */
+export async function heartbeat(code: string, meta: RoomMeta, players: Record<string, RoomPlayer>) {
+  const others = Object.entries(players).some(([id, p]) => id !== meta.hostUid && !p.bot);
+  const everJoined = !!meta.everJoined || others;
+  const expiresAt = meta.status === 'lobby' && !everJoined ? (meta.createdAt || serverNow()) + INVITE_TTL : serverNow() + IDLE_TTL;
+  await update(ref(db()), {
+    [`rooms/${code}/meta/expiresAt`]: expiresAt,
+    [`rooms/${code}/meta/everJoined`]: everJoined,
+    [`roomIndex/${code}`]: expiresAt
+  });
+}
+
+/** Clears out a few rooms whose time is up. Any signed in player can do this, so nothing piles up. */
+export async function sweepExpiredRooms() {
+  const snap = await get(query(ref(db(), 'roomIndex'), orderByValue(), endAt(serverNow()), limitToFirst(20)));
+  const codes: string[] = [];
+  snap.forEach((c) => {
+    codes.push(c.key!);
+  });
+  await Promise.all(codes.map((c) => closeRoom(c)));
+  return codes.length;
 }
 
 export { roomRef };

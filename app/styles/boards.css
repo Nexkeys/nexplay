@@ -51,6 +51,11 @@
   align-items: center;
   gap: 6px;
 }
+.chip-player .clock {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--brass);
+}
 .chip-player .hurry {
   color: var(--coral);
   font-weight: 700;

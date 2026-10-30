@@ -90,6 +90,7 @@ export function useLocalMatch(setup: LocalSetup | null) {
           actors: snap.actors,
           deadline: snap.deadline,
           turnDeadline: snap.turnDeadline,
+          turnSeconds: setup.turnSeconds,
           lastMove: snap.lastMove,
           result: snap.result,
           rev: snap.rev,

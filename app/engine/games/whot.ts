@@ -310,6 +310,11 @@ export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
       market: state.market.length
     };
   },
+  random(state, player, { rng }) {
+    const hand = state.hands[state.players.indexOf(player)];
+    const options: WhotMove[] = [{ type: 'draw' }, ...hand.filter((c) => canPlay(state, c)).map((c) => ({ type: 'play' as const, card: c.id, call: c.shape === 'whot' ? rng.pick(SHAPES) : undefined }))];
+    return rng.pick(options);
+  },
   bot(state, player, level: BotLevel, { rng }) {
     const me = state.players.indexOf(player);
     const hand = state.hands[me];

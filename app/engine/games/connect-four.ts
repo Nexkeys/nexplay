@@ -175,6 +175,10 @@ export const connectFour: GameDef<C4State, C4Move, C4Config> = {
   view(s) {
     return s;
   },
+  random(s, player, { rng }) {
+    const moves = legal(s, (s.players.indexOf(player) + 1) as 1 | 2);
+    return moves.length ? rng.pick(moves) : null;
+  },
   bot(s, player, level, { rng }) {
     const who = (s.players.indexOf(player) + 1) as 1 | 2;
     const moves = legal(s, who);

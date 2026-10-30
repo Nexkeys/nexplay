@@ -50,6 +50,18 @@ export function GameScreen({
   const [xp, setXp] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [emoteOpen, setEmoteOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Tell everyone when the clock ran out and a random move was played for someone.
+  const auto = stage?.lastMove?.auto ? stage.lastMove.by : null;
+  useEffect(() => {
+    if (!auto || !stage) return;
+    const who = auto === stage.me ? 'you' : firstName(seatOf(stage.seats, auto)?.name ?? 'them');
+    setNotice(`Time up! A random move was played for ${who}.`);
+    const t = setTimeout(() => setNotice(null), 2800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, stage?.rev]);
   useEffect(() => setMute(isMuted()), []);
 
   const result = stage?.result ?? null;
@@ -164,9 +176,9 @@ export function GameScreen({
       </div>
 
       <AnimatePresence>
-        {error && (
-          <motion.div className="gtoast" role="alert" initial={{ opacity: 0, y: -16, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: -16, x: '-50%' }}>
-            {error}
+        {(error || notice) && (
+          <motion.div key={error ?? notice} className={`gtoast${!error ? ' info' : ''}`} role="alert" initial={{ opacity: 0, y: -16, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: -16, x: '-50%' }}>
+            {error ?? notice}
           </motion.div>
         )}
       </AnimatePresence>

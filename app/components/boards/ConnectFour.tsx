@@ -8,7 +8,7 @@ import { PlayerChip, useChange } from '../game/common';
 
 const COLOURS = ['var(--coral)', 'var(--brass)'];
 
-export default function ConnectFourBoard({ view, me, seats, actors, send, turnDeadline, now, result }: StageProps<C4State>) {
+export default function ConnectFourBoard({ view, me, seats, actors, send, turnDeadline, turnSeconds, now, result }: StageProps<C4State>) {
   const s = view;
   const mine = me ? s.players.indexOf(me) : -1;
   const myTurn = mine >= 0 && actors.includes(me!) && !result;
@@ -60,7 +60,7 @@ export default function ConnectFourBoard({ view, me, seats, actors, send, turnDe
             sub={<span className="disc-dot" style={{ background: COLOURS[i] }} />}
             active={s.turn === i && !result}
             deadline={turnDeadline}
-            total={30}
+            total={turnSeconds}
             now={now}
           />
         ))}

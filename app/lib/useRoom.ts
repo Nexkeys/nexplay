@@ -8,6 +8,10 @@ import { useIdentity } from './identity';
 import {
   addBot,
   claimHost,
+  closeRoom,
+  heartbeat,
+  HEARTBEAT_MS,
+  isExpired,
   joinRoom,
   kickPlayer,
   leaveRoom,
@@ -38,6 +42,7 @@ const HOST_TIMEOUT = 5000;
 export function useRoom(code: string) {
   const { uid, name, avatar, ready: authReady } = useIdentity();
   const [join, setJoin] = useState<JoinResult | 'loading' | 'error'>('loading');
+  const [expired, setExpired] = useState(false);
   const [meta, setMeta] = useState<RoomMeta | null>(null);
   const [metaLoaded, setMetaLoaded] = useState(false);
   const [players, setPlayers] = useState<Record<string, RoomPlayer>>({});
@@ -148,6 +153,34 @@ export function useRoom(code: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHost, meta?.quick, meta?.status, Object.keys(players).length]);
 
+  // Keep the room open while the host is here. When everyone has gone, the heartbeat stops and the room expires.
+  const metaRef = useRef(meta);
+  metaRef.current = meta;
+  useEffect(() => {
+    if (!isHost) return;
+    const beat = () => {
+      const m = metaRef.current;
+      if (m && !isExpired(m)) heartbeat(code, m, playersRef.current).catch(() => {});
+    };
+    beat();
+    const t = setInterval(beat, HEARTBEAT_MS);
+    return () => clearInterval(t);
+  }, [isHost, code, meta?.status, Object.keys(players).length]);
+
+  // Anyone still looking at a room whose time is up sees it close, and the room is cleared away.
+  useEffect(() => {
+    if (!meta?.expiresAt) return;
+    const check = () => {
+      if (isExpired(metaRef.current)) {
+        setExpired(true);
+        closeRoom(code).catch(() => {});
+      }
+    };
+    check();
+    const t = setInterval(check, 1000);
+    return () => clearInterval(t);
+  }, [meta?.expiresAt, code]);
+
   const seats: Seat[] = useMemo(
     () =>
       Object.entries(players)
@@ -180,6 +213,7 @@ export function useRoom(code: string) {
           actors: live.actors ?? [],
           deadline: live.deadline ?? 0,
           turnDeadline: live.turnDeadline ?? 0,
+          turnSeconds: meta?.turnSeconds ?? 0,
           lastMove,
           result,
           rev: live.rev,
@@ -211,6 +245,7 @@ export function useRoom(code: string) {
     code,
     uid,
     join,
+    expired,
     loaded: metaLoaded,
     meta,
     players,

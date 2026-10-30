@@ -21,7 +21,7 @@ function Mark({ v, fading, big }: { v: number; fading?: boolean; big?: boolean }
   );
 }
 
-export default function TicTacToeBoard({ view, me, seats, actors, send, turnDeadline, now, result }: StageProps<TttState>) {
+export default function TicTacToeBoard({ view, me, seats, actors, send, turnDeadline, turnSeconds, now, result }: StageProps<TttState>) {
   const s = view;
   const mine = me ? s.players.indexOf(me) : -1;
   const myTurn = mine >= 0 && actors.includes(me!) && !result;
@@ -80,7 +80,7 @@ export default function TicTacToeBoard({ view, me, seats, actors, send, turnDead
             sub={i ? 'plays O' : 'plays X'}
             active={s.turn === i && !result}
             deadline={turnDeadline}
-            total={30}
+            total={turnSeconds}
             now={now}
             score={s.mode === 'ultimate' ? s.boards.filter((b) => b === i + 1).length : undefined}
           />
