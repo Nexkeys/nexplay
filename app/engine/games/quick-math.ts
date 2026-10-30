@@ -254,8 +254,11 @@ export const quickMath: GameDef<MathState, MathMove, MathConfig> = {
     }
     return { ranking, scores: s.scores, draw: ranking[0].length > 1, summary: s.mode === 'make24' ? 'Most points from puzzles solved.' : 'Speed and streaks decide it.' } satisfies MatchResult;
   },
-  view(s) {
-    return s.phase === 'play' ? { ...s, answer: '' } : s;
+  view(s, viewer) {
+    if (s.phase !== 'play') return s;
+    // While a question is open nobody sees the answer or what anyone else typed.
+    const answered = Object.fromEntries(Object.entries(s.answered).map(([p, a]) => [p, p === viewer ? a : { ...a, value: '' }]));
+    return { ...s, answer: '', answered };
   },
   bot(s, player, level, { now }) {
     if (s.phase !== 'play' || s.answered[player]) return null;
