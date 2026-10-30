@@ -837,7 +837,7 @@
   border: 1.5px dashed var(--line-2);
   box-shadow: none;
 }
-.seats .hole {
+.seats .seat-hole {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -1296,9 +1296,6 @@
   display: flex;
   flex-direction: column;
 }
-.m-only {
-  display: none;
-}
 .gbtn.on {
   background: var(--brass);
   color: var(--night);
@@ -1313,29 +1310,33 @@
 }
 .emote-bar {
   position: absolute;
+  top: 66px;
   right: clamp(12px, 3vw, 28px);
-  bottom: calc(16px + var(--safe-b));
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
+  z-index: 45;
+  display: none;
   gap: 4px;
-  padding: 5px;
+  padding: 6px;
   border-radius: 18px;
-  background: rgba(31, 23, 18, 0.86);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  background: rgba(31, 23, 18, 0.94);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 20px 40px -16px rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
-  opacity: 0.55;
-  transition: opacity 0.2s;
+  -webkit-backdrop-filter: blur(8px);
 }
-.emote-bar:hover,
-.emote-bar:focus-within {
-  opacity: 1;
+.emote-bar.open {
+  display: flex;
+  animation: drop-in 0.2s var(--ease);
+}
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 .emote-bar button {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  font-size: 20px;
+  font-size: 22px;
   transition: transform 0.15s var(--ease), background 0.2s;
 }
 .emote-bar button:hover {
@@ -1703,22 +1704,11 @@
     width: 40px;
     height: 40px;
   }
-  .m-only {
-    display: grid;
-  }
   .emote-bar {
-    display: none;
-    flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    top: 62px;
-    bottom: auto;
-    right: 12px;
     left: 12px;
-    opacity: 1;
-    z-index: 45;
-  }
-  .emote-bar.open {
-    display: flex;
+    right: 12px;
+    top: 60px;
   }
 }

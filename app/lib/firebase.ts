@@ -1,6 +1,6 @@
 import { getApps, initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getDatabase, onValue, ref, type Database } from 'firebase/database';
+import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth';
+import { connectDatabaseEmulator, getDatabase, onValue, ref, type Database } from 'firebase/database';
 
 // Web config for the nexplay-948af project. These values are public by design: they identify the
 // project to Firebase, and access is controlled by Authentication and the database rules.
@@ -16,9 +16,14 @@ const config = {
 
 export const DATABASE_URL = config.databaseURL;
 
+/** Set VITE_USE_EMULATORS=1 to run against the local Firebase emulators instead of the live project. */
+const EMULATORS = import.meta.env.VITE_USE_EMULATORS === '1';
+
 let app: FirebaseApp | null = null;
 let offset = 0;
 let offsetBound = false;
+let dbWired = false;
+let authWired = false;
 
 function firebaseApp(): FirebaseApp {
   if (typeof window === 'undefined') throw new Error('Firebase is only available in the browser.');
@@ -28,6 +33,10 @@ function firebaseApp(): FirebaseApp {
 
 export function db(): Database {
   const database = getDatabase(firebaseApp());
+  if (EMULATORS && !dbWired) {
+    dbWired = true;
+    connectDatabaseEmulator(database, '127.0.0.1', 9000);
+  }
   if (!offsetBound) {
     offsetBound = true;
     onValue(ref(database, '.info/serverTimeOffset'), (snap) => {
@@ -38,7 +47,12 @@ export function db(): Database {
 }
 
 export function auth(): Auth {
-  return getAuth(firebaseApp());
+  const a = getAuth(firebaseApp());
+  if (EMULATORS && !authWired) {
+    authWired = true;
+    connectAuthEmulator(a, 'http://127.0.0.1:9099', { disableWarnings: true });
+  }
+  return a;
 }
 
 /** Current time on the Firebase server, so every player's timers agree. */

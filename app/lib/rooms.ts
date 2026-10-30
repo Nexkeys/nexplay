@@ -119,11 +119,11 @@ const playerRecord = (name: string, avatar: string, seat: number, bot: BotLevel 
 export type JoinResult = 'joined' | 'spectating' | 'full' | 'missing';
 
 export async function joinRoom(code: string, uid: string, name: string, avatar: string): Promise<JoinResult> {
-  const snap = await get(roomRef(code));
-  if (!snap.exists()) return 'missing';
-  const room = snap.val() as { meta: RoomMeta; players?: Record<string, RoomPlayer> };
+  // Read meta and players separately: the rules do not allow reading a whole room at once.
+  const [metaSnap, playersSnap] = await Promise.all([get(roomRef(code, 'meta')), get(roomRef(code, 'players'))]);
+  const room = { meta: metaSnap.val() as RoomMeta | null };
   if (!room.meta) return 'missing';
-  const players = room.players ?? {};
+  const players = (playersSnap.val() ?? {}) as Record<string, RoomPlayer>;
   if (players[uid]) {
     await update(roomRef(code, `players/${uid}`), { connected: true, name });
     return 'joined';

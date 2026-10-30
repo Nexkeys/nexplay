@@ -89,7 +89,7 @@ export function GameScreen({
         </div>
         <div className="gtools">
           {onEmote && me && (
-            <button className={`gbtn m-only${emoteOpen ? ' on' : ''}`} onClick={() => setEmoteOpen(!emoteOpen)} aria-label="Reactions" aria-expanded={emoteOpen}>
+            <button className={`gbtn${emoteOpen ? ' on' : ''}`} onClick={() => setEmoteOpen(!emoteOpen)} aria-label="Reactions" aria-expanded={emoteOpen}>
               <span aria-hidden="true">😀</span>
             </button>
           )}

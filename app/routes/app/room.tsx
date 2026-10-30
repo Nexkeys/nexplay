@@ -221,7 +221,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
               ))}
               {Array.from({ length: Math.max(0, max - count) }, (_, i) => (
                 <motion.li key={`empty${i}`} layout className="empty">
-                  <span className="hole" />
+                  <span className="seat-hole" />
                   <span className="who">
                     <b>Open seat</b>
                     <small>Waiting for a player…</small>
