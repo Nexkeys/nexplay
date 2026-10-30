@@ -52,6 +52,8 @@ export interface GameDef<S, M, C extends Record<string, unknown>> {
   /** What a given player is allowed to see. null means a spectator. */
   view(state: S, viewer: PlayerId | null): unknown;
   bot(state: S, player: PlayerId, level: BotLevel, ctx: Ctx): M | null;
+  /** Any legal move, picked at random. Played for someone whose turn timer runs out. */
+  random?(state: S, player: PlayerId, ctx: Ctx): M | null;
   /** True when the game handles its own clock, so the room should not add a turn timer. */
   selfTimed?: boolean;
 }

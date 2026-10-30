@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { Icon } from '~/components/Icon';
 import { Logo } from '~/components/Logo';
 import { GAMES } from '~/engine/catalog';
+import { AGENCY_URL } from '~/lib/seo';
 import '~/styles/public.css';
 
 const LINKS = [
@@ -103,7 +104,10 @@ export default function PublicLayout() {
         <div className="pfoot-bottom">
           <span>© {new Date().getFullYear()} NexPlay</span>
           <span className="made">
-            Made by <b>NexKeys Agency</b>
+            Made by{' '}
+            <a href={AGENCY_URL} target="_blank" rel="noopener">
+              <b>NexKeys Agency</b>
+            </a>
           </span>
         </div>
       </footer>

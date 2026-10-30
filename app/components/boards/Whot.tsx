@@ -23,7 +23,7 @@ export function CardFace({ card, size = 'md' }: { card: Card; size?: 'sm' | 'md'
 
 export const CardBack = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => <span className={`wcard back ${size}`} />;
 
-export default function WhotBoard({ view, me, seats, actors, send, turnDeadline, now, result }: StageProps<View>) {
+export default function WhotBoard({ view, me, seats, actors, send, turnDeadline, turnSeconds, now, result }: StageProps<View>) {
   const s = view;
   const mine = me ? s.players.indexOf(me) : -1;
   const hand = mine >= 0 && Array.isArray(s.hands[mine]) ? (s.hands[mine] as Card[]) : [];
@@ -96,7 +96,7 @@ export default function WhotBoard({ view, me, seats, actors, send, turnDeadline,
           if (!seat) return null;
           return (
             <div key={seat.id} className={`whot-opp${s.turn === i && !result ? ' on' : ''}`}>
-              <PlayerChip seat={seat} sub={`${count} card${count === 1 ? '' : 's'}`} active={s.turn === i && !result} deadline={turnDeadline} total={30} now={now} />
+              <PlayerChip seat={seat} sub={`${count} card${count === 1 ? '' : 's'}`} active={s.turn === i && !result} deadline={turnDeadline} total={turnSeconds} now={now} />
               <div className="mini-fan" aria-hidden="true">
                 {Array.from({ length: Math.min(count, 9) }, (_, k) => (
                   <motion.span key={k} layout initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ rotate: (k - Math.min(count, 9) / 2) * 5 }}>
@@ -173,7 +173,7 @@ export default function WhotBoard({ view, me, seats, actors, send, turnDeadline,
         {mine >= 0 ? (
           <>
             <div className="whot-actions">
-              <PlayerChip seat={seatOf(seats, me)!} me sub={myTurn ? 'Your turn' : `${hand.length} cards`} active={myTurn} deadline={turnDeadline} total={30} now={now} />
+              <PlayerChip seat={seatOf(seats, me)!} me sub={myTurn ? 'Your turn' : `${hand.length} cards`} active={myTurn} deadline={turnDeadline} total={turnSeconds} now={now} />
               <div className="acts">
                 {needCall && myTurn && (
                   <button className={`btn-call${declare ? ' on' : ''}`} onClick={() => (setDeclare(!declare), play('tap'), buzz())}>

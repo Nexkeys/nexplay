@@ -66,7 +66,7 @@ const CHAPTERS: Chapter[] = [
       { h: 'Ready up', p: 'Players tap I am ready. The host can start once everyone is ready and there are enough players.' },
       { h: 'House rules', p: 'The host picks the mode and switches special rules on or off, like pick three in Whot or the Ayo rule set.' },
       { h: 'Computer players', p: 'Short of players? The host can fill empty seats with computer players at easy, medium or hard.' },
-      { h: 'Seats and timer', p: 'Party games take up to eight players. Turn based games can have a turn timer of 15, 30 or 60 seconds.' }
+      { h: 'Seats and timer', p: 'Party games take up to eight players. Turn based games always have a turn timer of 15, 30 or 60 seconds, so nobody is kept waiting.' }
     ]
   },
   {
@@ -77,6 +77,7 @@ const CHAPTERS: Chapter[] = [
     notes: [
       { h: 'Rules at hand', p: 'Tap the book icon at the top of any game to read the rules without leaving.' },
       { h: 'Reactions', p: 'Send a quick emoji to the table from the bar at the bottom.' },
+      { h: 'Turn timer', p: 'Your seconds count down next to your name. Run out of time and a random move is played for you, so stay at the table.' },
       { h: 'Sound', p: 'Tap the speaker icon to mute. Your choice is remembered.' },
       { h: 'Play again', p: 'When the game ends the host can start a rematch in one tap, or take everyone back to the lobby. Wins are counted for the whole session.' }
     ]
@@ -127,7 +128,7 @@ const CHAPTERS: Chapter[] = [
     notes: [
       { h: 'My network dropped', p: 'Open the same room link again. Your seat is kept. While you are away, the game plays a quick move for you when your turn comes, so others are not stuck.' },
       { h: 'The host left', p: 'After a few seconds the next player takes over as host automatically and the game carries on from the same position.' },
-      { h: 'Room not found', p: 'Check the code. Rooms close when everyone leaves, so ask the host for a fresh code.' },
+      { h: 'Room not found or expired', p: 'An invite code closes after 15 minutes if nobody joins, and a room closes 5 minutes after everyone has left. Ask the host for a fresh code.' },
       { h: 'This room is full', p: 'Every seat is taken. Ask the host to remove a computer player or raise the number of seats.' },
       { h: 'My move did not count', p: 'A short message tells you why, for example it was not your turn or the card does not match. Try again.' }
     ]

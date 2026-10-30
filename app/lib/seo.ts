@@ -1,3 +1,6 @@
+/** NexKeys Agency, who made NexPlay. Used for credits and contact links. */
+export const AGENCY_URL = 'https://nexkeysagency.com.ng';
+
 /** The public address of the site. Set VITE_SITE_URL in Vercel if you use a different domain. */
 export const SITE = (import.meta.env.VITE_SITE_URL ?? 'https://nexplay.vercel.app').replace(/\/$/, '');
 

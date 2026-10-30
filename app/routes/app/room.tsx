@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Avatar } from '~/components/Avatar';
 import { GameArt } from '~/components/GameArt';
@@ -9,7 +9,8 @@ import { Settings } from '~/components/game/Settings';
 import { GAMES, gameMeta } from '~/engine/catalog';
 import type { BotLevel, GameId } from '~/engine/types';
 import { useIdentity } from '~/lib/identity';
-import { isCode, joinRoom, normaliseCode } from '~/lib/rooms';
+import { serverNow } from '~/lib/firebase';
+import { isCode, joinRoom, normaliseCode, type RoomMeta } from '~/lib/rooms';
 import { firstName } from '~/lib/stage';
 import { useRoom, type RoomApi } from '~/lib/useRoom';
 
@@ -29,7 +30,9 @@ function Room({ code }: { code: string }) {
   const nav = useNavigate();
   const { meta } = room;
 
-  if (room.join === 'missing') return <Problem title="Room not found" text={`There is no room ${code}. It may have closed when everyone left. Check the code, or start a new room.`} />;
+  if (room.join === 'expired' || room.expired)
+    return <Problem title="This room has expired" text="Room codes close when nobody uses them, and rooms close a few minutes after everyone has left. Start a new room and share the fresh code." />;
+  if (room.join === 'missing') return <Problem title="Room not found" text={`There is no room ${code}. Codes expire after 15 minutes if nobody joins, and rooms close a few minutes after everyone leaves. Check the code, or start a new room.`} />;
   if (room.join === 'full') return <Problem title="This room is full" text="Every seat is taken. Ask the host to make space, or start your own room." />;
   if (room.join === 'error') return <Problem title="Could not join" text="Check your internet connection and try again." />;
   if (room.join === 'loading' || !room.loaded) return <Loading text={`Joining room ${code}…`} />;
@@ -81,7 +84,6 @@ function Room({ code }: { code: string }) {
 }
 
 const TIMERS = [
-  { value: 0, label: 'Off' },
   { value: 15, label: '15s' },
   { value: 30, label: '30s' },
   { value: 60, label: '60s' }
@@ -166,6 +168,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
               </motion.span>
             ))}
           </button>
+          <InviteTimer meta={meta} />
           <div className="code-actions">
             <button className="btn small" onClick={share}>
               <Icon name="share" size={18} /> Invite
@@ -270,7 +273,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
             <div className="set-choice">
               <span>
                 <b>Turn timer</b>
-                <small>When time runs out, a quick move is played for you.</small>
+                <small>Run out of time and a random move is played for you, so nobody is left waiting.</small>
               </span>
               <div className="seg">
                 {TIMERS.map((t) => (
@@ -327,6 +330,23 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function InviteTimer({ meta }: { meta: RoomMeta }) {
+  const [now, setNow] = useState(serverNow);
+  useEffect(() => {
+    const t = setInterval(() => setNow(serverNow()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (meta.everJoined || meta.quick || !meta.expiresAt) return <p className="invite-note">Code stays open while players are here.</p>;
+  const left = Math.max(0, meta.expiresAt - now);
+  const m = Math.floor(left / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  return (
+    <p className={`invite-note${left < 120000 ? ' soon' : ''}`}>
+      Code expires in {m}:{String(s).padStart(2, '0')} if nobody joins
+    </p>
   );
 }
 

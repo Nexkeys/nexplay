@@ -1,4 +1,4 @@
-import { seo } from '~/lib/seo';
+import { AGENCY_URL, seo } from '~/lib/seo';
 import { Legal } from './legal';
 
 export function meta() {
@@ -50,12 +50,25 @@ export default function Privacy() {
       <h2>Your choices</h2>
       <ul>
         <li>You can change your display name at any time from your profile.</li>
-        <li>You can ask us to delete your statistics and leaderboard entry by contacting NexKeys Agency and telling us your display name.</li>
+        <li>You can ask us to delete your statistics and leaderboard entry by contacting{' '}
+          <a href={AGENCY_URL} target="_blank" rel="noopener">
+            NexKeys Agency
+          </a>{' '}
+          and telling us your display name.</li>
         <li>If you signed in with Google you can remove NexPlay's access from your Google account settings.</li>
       </ul>
 
       <h2>Children</h2>
       <p>NexPlay is a general audience site and does not knowingly collect personal information from children under 13 beyond the anonymous guest ID needed to play.</p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about your data? Reach NexKeys Agency at{' '}
+        <a href={AGENCY_URL} target="_blank" rel="noopener">
+          nexkeysagency.com.ng
+        </a>
+        .
+      </p>
 
       <h2>Changes</h2>
       <p>If this policy changes we will update this page and the date at the top.</p>

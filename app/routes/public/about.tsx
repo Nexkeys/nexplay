@@ -3,7 +3,7 @@ import { GameArt } from '~/components/GameArt';
 import { Icon } from '~/components/Icon';
 import { Reveal } from '~/components/fx/Reveal';
 import { Split } from '~/components/fx/Split';
-import { seo } from '~/lib/seo';
+import { AGENCY_URL, seo } from '~/lib/seo';
 
 export function meta() {
   return seo({ title: 'About · NexPlay', description: 'Why we built NexPlay: the games we grew up with, made for phones and group chats. Made by NexKeys Agency.', path: '/about' });
@@ -67,9 +67,14 @@ export default function About() {
           <h2>Made by NexKeys Agency.</h2>
           <p>NexKeys Agency designs and builds websites, apps and products. NexPlay is our love letter to game night: built from scratch, with every game engine, rule and computer player written in house.</p>
         </div>
-        <Link to="/play" className="pbtn big brass">
-          Play now <Icon name="arrow" />
-        </Link>
+        <div className="maker-cta">
+          <a href={AGENCY_URL} target="_blank" rel="noopener" className="pbtn big ghost light">
+            Visit NexKeys Agency
+          </a>
+          <Link to="/play" className="pbtn big brass">
+            Play now <Icon name="arrow" />
+          </Link>
+        </div>
       </section>
 
       <section className="sec credits">

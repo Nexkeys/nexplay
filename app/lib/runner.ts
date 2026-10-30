@@ -12,7 +12,7 @@ export interface Snapshot {
   turnDeadline: number;
   result: MatchResult | null;
   /** Last applied move, for sounds and animation cues. */
-  lastMove: { by: PlayerId; move: unknown } | null;
+  lastMove: { by: PlayerId; move: unknown; auto?: boolean } | null;
 }
 
 export interface RunnerOptions {
@@ -67,13 +67,13 @@ export class MatchRunner {
   }
 
   /** Returns an error message for the player, or null when the move was applied. */
-  move(player: PlayerId, move: unknown): string | null {
+  move(player: PlayerId, move: unknown, auto = false): string | null {
     if (this.result) return 'The game is over.';
     const err = this.game.validate(this.state, player, move);
     if (err) return err;
     const now = this.opts.now();
     this.state = this.game.apply(this.state, player, move, { rng: this.rng, now });
-    this.lastMove = { by: player, move };
+    this.lastMove = auto ? { by: player, move, auto } : { by: player, move };
     this.refreshActors(now);
     this.emit();
     return null;
@@ -100,15 +100,16 @@ export class MatchRunner {
       const move = this.game.bot(this.state, id, p.bot as BotLevel, { rng: this.rng, now });
       if (move && !this.move(id, move)) return;
     }
-    // Turn timer and absent players: play an easy move for them so the game keeps going.
+    // Out of time, or gone for a while: play any legal move for them so nobody is left waiting.
     const absentDue = now - this.actorsSince > 12000;
     if (!this.game.selfTimed && ((this.turnDeadline && now > this.turnDeadline) || absentDue)) {
       for (const id of actors) {
         const p = this.players.find((x) => x.id === id);
         if (p?.bot) continue;
         if (!(this.turnDeadline && now > this.turnDeadline) && !this.disconnected.has(id)) continue;
-        const move = this.game.bot(this.state, id, 'easy', { rng: this.rng, now });
-        if (move && !this.move(id, move)) return;
+        const ctx = { rng: this.rng, now };
+        const move = this.game.random?.(this.state, id, ctx) ?? this.game.bot(this.state, id, 'easy', ctx);
+        if (move && !this.move(id, move, true)) return;
       }
     }
   }

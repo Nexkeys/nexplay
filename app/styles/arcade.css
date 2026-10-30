@@ -782,6 +782,15 @@
   font-size: 28px;
   color: var(--brass);
 }
+.invite-note {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--mute);
+  margin: -4px 0 12px;
+}
+.invite-note.soon {
+  color: var(--coral);
+}
 .code-actions {
   display: flex;
   gap: 8px;
@@ -1368,6 +1377,9 @@
   color: var(--night);
   padding: 2px 8px;
   border-radius: 999px;
+}
+.gtoast.info {
+  background: var(--brass);
 }
 .gtoast {
   position: absolute;

@@ -31,7 +31,7 @@ function Seeds({ n }: { n: number }) {
   );
 }
 
-export default function AyoBoard({ view, me, seats, actors, send, turnDeadline, now, result }: StageProps<AyoState>) {
+export default function AyoBoard({ view, me, seats, actors, send, turnDeadline, turnSeconds, now, result }: StageProps<AyoState>) {
   const s = view;
   const mine = me ? s.players.indexOf(me) : -1;
   const side = (mine === 1 ? 1 : 0) as 0 | 1;
@@ -150,7 +150,7 @@ export default function AyoBoard({ view, me, seats, actors, send, turnDeadline, 
   return (
     <div className="board-ayo">
       <div className="seat-row top">
-        <PlayerChip seat={seatFor(opp)} sub={`${score(opp)} ${label}`} active={actors.includes(s.players[opp])} deadline={turnDeadline} total={30} now={now} score={score(opp)} />
+        <PlayerChip seat={seatFor(opp)} sub={`${score(opp)} ${label}`} active={actors.includes(s.players[opp])} deadline={turnDeadline} total={turnSeconds} now={now} score={score(opp)} />
       </div>
 
       <div className="ayo-wrap">
@@ -180,7 +180,7 @@ export default function AyoBoard({ view, me, seats, actors, send, turnDeadline, 
       </div>
 
       <div className="seat-row bottom">
-        <PlayerChip seat={seatFor(side)} me={mine >= 0} sub={`${score(side)} ${label}`} active={actors.includes(s.players[side])} deadline={turnDeadline} total={30} now={now} score={score(side)} />
+        <PlayerChip seat={seatFor(side)} me={mine >= 0} sub={`${score(side)} ${label}`} active={actors.includes(s.players[side])} deadline={turnDeadline} total={turnSeconds} now={now} score={score(side)} />
       </div>
     </div>
   );

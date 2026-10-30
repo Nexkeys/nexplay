@@ -256,6 +256,10 @@ export const ticTacToe: GameDef<TttState, TttMove, TttConfig> = {
   view(s) {
     return s;
   },
+  random(s, _player, { rng }) {
+    const cells = legalCells(s);
+    return cells.length ? { cell: rng.pick(cells) } : null;
+  },
   bot(s, player, level, ctx) {
     const cell = chooseBot(s, s.players.indexOf(player) + 1, level, ctx);
     return cell === null ? null : { cell };

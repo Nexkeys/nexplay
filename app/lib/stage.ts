@@ -20,7 +20,9 @@ export interface StageProps<V = unknown> {
   actors: string[];
   deadline: number;
   turnDeadline: number;
-  lastMove: { by: string; move: unknown } | null;
+  /** Length of a turn in seconds, 0 when there is no turn timer. */
+  turnSeconds: number;
+  lastMove: { by: string; move: unknown; auto?: boolean } | null;
   result: MatchResult | null;
   rev: number;
   send(move: unknown): void;
