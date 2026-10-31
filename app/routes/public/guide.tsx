@@ -94,7 +94,7 @@ const CHAPTERS: Chapter[] = [
     icon: 'bot',
     title: 'Playing the computer',
     lead: 'Every game has a computer opponent at three levels. Easy makes mistakes. Hard thinks several moves ahead in Ayo, Connect Four and Tic Tac Toe, and reads your habits in Rock Paper Scissors.',
-    steps: ['Pick a game and tap Vs computer.', 'Choose the level, the number of computer players (for Whot and party games) and the house rules.', 'Tap Start. Games against the computer work even on a weak connection.']
+    steps: ['Pick a game and tap Vs computer.', 'Choose the level, the number of computer players (for Whot and party games), the turn timer and the house rules.', 'Tap Start. Games against the computer work even on a weak connection.']
   },
   {
     id: 'xp',

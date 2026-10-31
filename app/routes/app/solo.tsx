@@ -5,7 +5,7 @@ import { GameArt } from '~/components/GameArt';
 import { Icon } from '~/components/Icon';
 import { GameScreen } from '~/components/game/GameScreen';
 import { Settings } from '~/components/game/Settings';
-import { gameMeta, loadGame } from '~/engine/catalog';
+import { gameMeta, isTurnBased, loadGame, TURN_TIMERS } from '~/engine/catalog';
 import type { BotLevel, GameId } from '~/engine/types';
 import { useIdentity } from '~/lib/identity';
 import { useLocalMatch, type LocalSetup } from '~/lib/useLocalMatch';
@@ -32,6 +32,7 @@ export default function Solo() {
   const [opponents, setOpponents] = useState(1);
   const [setup, setSetup] = useState<LocalSetup | null>(null);
   const [started, setStarted] = useState(0);
+  const [turnSeconds, setTurnSeconds] = useState(30);
 
   useEffect(() => {
     if (!info) return;
@@ -50,7 +51,12 @@ export default function Solo() {
       <GameScreen
         game={info.id}
         stage={match.stage}
-        chip={<span className="gchip mono">Vs computer · {level}</span>}
+        chip={
+          <span className="gchip mono">
+            Vs computer · {level}
+            {setup.turnSeconds ? ` · ${setup.turnSeconds}s turns` : ''}
+          </span>
+        }
         error={match.error}
         onLeave={() => setSetup(null)}
         recordKey={`solo:${info.id}:${started}:${match.round}`}
@@ -105,6 +111,20 @@ export default function Solo() {
             </>
           )}
 
+          {isTurnBased(info.id) && (
+            <>
+              <h2>Turn timer</h2>
+              <div className="seg" role="radiogroup" aria-label="Turn timer">
+                {TURN_TIMERS.map((s) => (
+                  <button key={s} role="radio" aria-checked={turnSeconds === s} className={turnSeconds === s ? 'on' : ''} onClick={() => setTurnSeconds(s)}>
+                    {s}s
+                  </button>
+                ))}
+              </div>
+              <p className="muted small timer-help">Run out of time and a random move is played for you.</p>
+            </>
+          )}
+
           <h2>House rules</h2>
           {defaults ? <Settings meta={info} config={config} onChange={(p) => setConfig({ ...config, ...p })} /> : <p className="muted">Loading…</p>}
 
@@ -123,7 +143,7 @@ export default function Solo() {
                   level,
                   opponents: Math.min(Math.max(opponents, minOpp), maxOpp),
                   me: { id: id.uid ?? 'me', name: id.name || 'You', avatar: id.avatar },
-                  turnSeconds: 0
+                  turnSeconds: isTurnBased(info.id) ? turnSeconds : 0
                 });
               }}
             >

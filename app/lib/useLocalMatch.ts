@@ -61,7 +61,7 @@ export function useLocalMatch(setup: LocalSetup | null) {
     const t = setInterval(() => r.step(), 150);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, round, setup?.game, setup?.opponents, setup?.level, JSON.stringify(setup?.config)]);
+  }, [game, round, setup?.game, setup?.opponents, setup?.level, setup?.turnSeconds, JSON.stringify(setup?.config)]);
 
   const result = snap?.result ?? null;
   const counted = useRef(-1);

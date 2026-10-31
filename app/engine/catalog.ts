@@ -325,6 +325,10 @@ export const GAMES: GameMeta[] = [
 ];
 
 export const gameIds = GAMES.map((g) => g.id);
+/** Games played in turns. These get a turn timer; the others run on their own round clocks. */
+export const isTurnBased = (id: GameId) => id === 'ayo' || id === 'whot' || id === 'connect-four' || id === 'tic-tac-toe';
+/** Turn timer choices, in seconds. */
+export const TURN_TIMERS = [15, 30, 60];
 export const gameMeta = (id: string) => GAMES.find((g) => g.id === id);
 
 /** Loads a game's engine on demand so each game ships as its own chunk. */

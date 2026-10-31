@@ -6,7 +6,7 @@ import { GameArt } from '~/components/GameArt';
 import { Icon } from '~/components/Icon';
 import { GameScreen } from '~/components/game/GameScreen';
 import { Settings } from '~/components/game/Settings';
-import { GAMES, gameMeta } from '~/engine/catalog';
+import { GAMES, gameMeta, isTurnBased, TURN_TIMERS } from '~/engine/catalog';
 import type { BotLevel, GameId } from '~/engine/types';
 import { useIdentity } from '~/lib/identity';
 import { serverNow } from '~/lib/firebase';
@@ -83,11 +83,7 @@ function Room({ code }: { code: string }) {
   );
 }
 
-const TIMERS = [
-  { value: 15, label: '15s' },
-  { value: 30, label: '30s' },
-  { value: 60, label: '60s' }
-];
+const TIMERS = TURN_TIMERS.map((s) => ({ value: s, label: `${s}s` }));
 
 function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
   const meta = room.meta!;
@@ -104,7 +100,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
   const canStart = room.isHost && count >= minNeeded && count <= info.players[1] && notReady.length === 0;
   const me = room.uid ? room.players[room.uid] : null;
   const link = typeof window !== 'undefined' ? `${window.location.origin}/room/${meta.code}` : '';
-  const turnBased = !['rps', 'word-race', 'quick-math', 'trivia'].includes(meta.game);
+  const turnBased = isTurnBased(meta.game);
 
   const share = async () => {
     const text = `Join my ${info.name} game on NexPlay. Room code ${meta.code}`;

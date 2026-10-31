@@ -1019,6 +1019,9 @@
   color: var(--mute);
   font-size: 12.5px;
 }
+.timer-help {
+  margin-top: 8px;
+}
 .solo-go {
   display: flex;
   justify-content: space-between;
