@@ -804,6 +804,7 @@
   align-items: start;
 }
 .panel {
+  min-width: 0;
   border-radius: 24px;
   padding: 22px;
   background: var(--walnut);
@@ -826,9 +827,12 @@
 }
 .seats {
   display: grid;
+  /* minmax(0, 1fr): long names shorten with … instead of widening the row */
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
 .seats li {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1238,7 +1242,7 @@
 }
 .per-game li {
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: 52px minmax(0, 1fr);
   grid-template-rows: auto auto;
   column-gap: 10px;
   align-items: center;
@@ -1542,7 +1546,7 @@
   .lobby-body,
   .solo-card,
   .prof-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .play-side {
     grid-template-rows: none;
@@ -1713,10 +1717,10 @@
     margin: 12px auto 0;
   }
   .stat-row {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .per-game {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .gtitle b {
     font-size: 18px;
