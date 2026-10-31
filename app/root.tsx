@@ -7,7 +7,7 @@ import './styles/base.css';
 
 export const links: LinksFunction = () => [
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-  { rel: 'apple-touch-icon', href: '/icon-192.png' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
   { rel: 'manifest', href: '/manifest.webmanifest' }
 ];
 
@@ -44,7 +44,24 @@ export function HydrateFallback() {
   );
 }
 
+/** A new version went live while this tab was open, so an old code file is gone. Reload once to get the new one. */
+const STALE = /dynamically imported module|Importing a module script failed|error loading dynamically imported|Failed to load module script/i;
+function reloadOnceForNewVersion() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const last = Number(sessionStorage.getItem('np-reloaded') || 0);
+    if (Date.now() - last < 30_000) return false;
+    sessionStorage.setItem('np-reloaded', String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+  window.location.reload();
+  return true;
+}
+if (typeof window !== 'undefined') window.addEventListener('vite:preloadError', () => reloadOnceForNewVersion());
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  if (error instanceof Error && STALE.test(error.message) && reloadOnceForNewVersion()) return <HydrateFallback />;
   let title = 'Something went wrong';
   let detail = 'Please refresh the page. If it keeps happening, try again in a minute.';
   if (isRouteErrorResponse(error) && error.status === 404) {

@@ -13,7 +13,7 @@
       "destination": "https://nexplay-948af.firebaseapp.com/__/firebase/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|__/).*)",
       "destination": "/__spa-fallback.html"
     }
   ],
