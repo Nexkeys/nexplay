@@ -86,7 +86,7 @@ export default function ProfilePage() {
             <>
               <p className="muted">You are playing as a guest. Your progress lives on this device. Sign in with Google to keep it safe and use it on any device.</p>
               <button className="btn google" onClick={google} disabled={going}>
-                <Icon name="google" /> {going ? 'Opening Google…' : 'Continue with Google'}
+                <Icon name="google" /> {going ? 'Finish signing in in the Google window…' : 'Continue with Google'}
               </button>
               {id.googleError && <p className="err">{id.googleError}</p>}
             </>

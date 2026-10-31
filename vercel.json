@@ -5,15 +5,7 @@
   "outputDirectory": "build/client",
   "rewrites": [
     {
-      "source": "/__/auth/:path*",
-      "destination": "https://nexplay-948af.firebaseapp.com/__/auth/:path*"
-    },
-    {
-      "source": "/__/firebase/:path*",
-      "destination": "https://nexplay-948af.firebaseapp.com/__/firebase/:path*"
-    },
-    {
-      "source": "/((?!assets/|__/).*)",
+      "source": "/((?!assets/).*)",
       "destination": "/__spa-fallback.html"
     }
   ],

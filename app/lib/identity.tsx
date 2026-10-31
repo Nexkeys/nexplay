@@ -81,31 +81,14 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
     let unsub = () => {};
     (async () => {
       const [{ auth }, fa] = await Promise.all([import('./firebase'), import('firebase/auth')]);
-      const { onAuthStateChanged, signInAnonymously } = fa;
+      const { onIdTokenChanged, signInAnonymously } = fa;
       const a = auth();
-      // Coming back from Google: finish the sign in before deciding the player is a guest.
-      try {
-        const res = await fa.getRedirectResult(a);
-        if (res?.user) {
-          setUser(res.user);
-          setRev((r) => r + 1);
-        }
-      } catch (e) {
-        const code = (e as { code?: string }).code ?? '';
-        if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
-          // That Google account already plays NexPlay: switch to it.
-          const cred = fa.GoogleAuthProvider.credentialFromError(e as Parameters<typeof fa.GoogleAuthProvider.credentialFromError>[0]);
-          if (cred) await fa.signInWithCredential(a, cred).catch(() => setGoogleError(GOOGLE_FAILED));
-        } else if (code === 'auth/provider-already-linked') {
-          await a.currentUser?.reload().catch(() => {});
-          setRev((r) => r + 1);
-        } else {
-          setGoogleError(googleMessage(code));
-        }
-      }
-      unsub = onAuthStateChanged(a, async (u) => {
+      // onIdTokenChanged also fires when Google is linked to a guest, which onAuthStateChanged does not.
+      unsub = onIdTokenChanged(a, async (u) => {
         if (u) {
           setUser(u);
+          setRev((r) => r + 1);
+          if (!u.isAnonymous) setGoogleError(null);
           if (!u.isAnonymous && u.displayName && read(NAME_KEY) === stored && !read('np-name-set')) {
             const n = cleanName(u.displayName.split(' ')[0]);
             setNameState(n);
@@ -143,7 +126,10 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
     write(AVATAR_KEY, c);
   }, []);
 
-  // A full page redirect, not a popup: browsers that isolate Google's sign in window break popups.
+  // The Google window opens as a popup. Some browsers (Edge, Chrome) hide that window from the page, so
+  // Firebase can wrongly report it closed after about ten seconds while the player is still signing in.
+  // So a "closed" report is never shown as an error: onIdTokenChanged above picks up the sign in
+  // whenever it actually lands.
   const signInWithGoogle = useCallback(async () => {
     setGoogleError(null);
     const [{ auth }, fa] = await Promise.all([import('./firebase'), import('firebase/auth')]);
@@ -152,10 +138,23 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       // Linking keeps the guest account's uid, so stats carry over.
-      if (a.currentUser?.isAnonymous) await fa.linkWithRedirect(a.currentUser, provider);
-      else await fa.signInWithRedirect(a, provider);
+      if (a.currentUser?.isAnonymous) await fa.linkWithPopup(a.currentUser, provider);
+      else await fa.signInWithPopup(a, provider);
     } catch (e) {
-      setGoogleError(googleMessage((e as { code?: string }).code ?? ''));
+      const code = (e as { code?: string }).code ?? '';
+      if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
+        // That Google account already plays NexPlay: switch to it, without a second popup.
+        const cred = fa.GoogleAuthProvider.credentialFromError(e as Parameters<typeof fa.GoogleAuthProvider.credentialFromError>[0]);
+        if (cred) await fa.signInWithCredential(a, cred).catch(() => setGoogleError(GOOGLE_FAILED));
+        else setGoogleError(GOOGLE_FAILED);
+      } else if (code === 'auth/provider-already-linked') {
+        await a.currentUser?.reload().catch(() => {});
+        setRev((r) => r + 1);
+      } else if (code === 'auth/popup-blocked') {
+        setGoogleError('Your browser blocked the Google window. Allow pop ups for this site and try again.');
+      } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+        setGoogleError(googleMessage(code));
+      }
     }
   }, []);
 
