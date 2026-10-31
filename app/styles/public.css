@@ -271,7 +271,7 @@
 .hero-h {
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(54px, 10.4vw, 150px);
+  font-size: clamp(54px, 9.2vw, 136px);
   line-height: 0.88;
   letter-spacing: -0.06em;
   margin-top: 18px;
