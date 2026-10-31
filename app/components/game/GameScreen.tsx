@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { gameMeta } from '~/engine/catalog';
 import type { GameId } from '~/engine/types';
@@ -68,6 +68,9 @@ export function GameScreen({
   const me = stage?.me ?? null;
 
   // Count the result once, then show the results card after the last animation settles.
+  // Only a new result triggers this: a rematch changes recordKey a moment before the old result clears.
+  const keyRef = useRef(recordKey);
+  keyRef.current = recordKey;
   useEffect(() => {
     if (!result) {
       setShowResult(false);
@@ -79,13 +82,13 @@ export function GameScreen({
       const outcome = outcomeFor(result, me);
       play(outcome === 'win' ? 'win' : outcome === 'loss' ? 'lose' : 'turn');
       const vsComputerOnly = stage.seats.filter((s) => s.id !== me).every((s) => s.bot);
-      recordMatch({ uid, name, avatar, game, outcome, vsComputerOnly, key: recordKey })
+      recordMatch({ uid, name, avatar, game, outcome, vsComputerOnly, key: keyRef.current })
         .then((g) => setXp(g))
         .catch(() => setXp(null));
     }
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result, recordKey]);
+  }, [result]);
 
   const outcome = result && me ? outcomeFor(result, me) : null;
 

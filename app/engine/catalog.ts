@@ -108,7 +108,8 @@ export const GAMES: GameMeta[] = [
       { key: 'generalMarket', label: 'General market (14)', type: 'toggle' },
       { key: 'callRule', label: 'Must call last card', help: 'Forget and you pick two.', type: 'toggle' },
       { key: 'semiLastCard', label: 'Must call semi last card too', type: 'toggle', when: { key: 'callRule', value: true } },
-      { key: 'changeDirection', label: '2 and 5 change direction', type: 'toggle' }
+      { key: 'changeDirection', label: '2 and 5 change direction', type: 'toggle' },
+      { key: 'tender', label: 'Tender when the market finishes', help: 'One reshuffle, then when the market finishes again everyone counts their cards.', type: 'toggle' }
     ],
     rules: [
       { title: 'The deck', body: ['54 cards in five shapes: circles, triangles, crosses, squares and stars, numbered 1 to 14 with some numbers missing, plus five Whot cards numbered 20.'] },
@@ -132,6 +133,7 @@ export const GAMES: GameMeta[] = [
       },
       { title: 'Last card and check up', body: ['With two cards left say semi last card, with one left say last card. Forget and you pick two. Play your last card and you win: check up!'] },
       { title: 'House rules', body: ['The room host can switch every special card on or off before the game, so you can play exactly the way your family does.'] },
+      { title: 'Market finished: tender', body: ['The first time the market runs out, the pile is shuffled back in. When it runs out again, everyone tenders their cards and the lowest total wins. The host can switch tender off; the pile is then reshuffled every time, and a very long game is counted after 1,200 moves.'] },
       { title: 'Scoring', body: ['The first player out wins. Everyone else is ranked by the cards left in hand: stars count double, Whot cards count 20.'] }
     ],
     tips: ['Keep a 2 or a 5 to defend yourself.', 'Save your Whot for when you are stuck, then call the shape you hold most of.'],
@@ -291,11 +293,12 @@ export const GAMES: GameMeta[] = [
           { value: 'hard', label: 'Hard' }
         ]
       },
-      { key: 'questions', label: 'Questions', type: 'choice', options: [10, 15, 20].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'sprint' } }
+      { key: 'questions', label: 'Questions', type: 'choice', options: [10, 15, 20].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'sprint' } },
+      { key: 'puzzles', label: 'Puzzles', type: 'choice', options: [3, 5, 8].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'make24' } }
     ],
     rules: [
       { title: 'Sprint', body: ['Everyone gets the same sum at the same time and one try to answer. Correct answers score 100 plus up to 100 for speed. Answer several in a row for a streak multiplier of up to ×1.5.'] },
-      { title: 'Make 24', body: ['Use all four numbers exactly once with + − × ÷ and brackets to make 24. Every puzzle has at least one answer. The first solver scores most, and you can keep trying until time runs out.'] }
+      { title: 'Make 24', body: ['Use all four numbers exactly once with + − × ÷ and brackets to make 24. Every puzzle has at least one answer. The first solver scores most, and you can keep trying until time runs out. Once someone solves it, everyone else has 15 seconds left.'] }
     ],
     tips: ['In Make 24, look for 3 × 8, 4 × 6 and 2 × 12 first.'],
     keywords: ['quick math game', 'make 24 game online', 'math race multiplayer']

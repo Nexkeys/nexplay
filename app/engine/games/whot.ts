@@ -39,6 +39,8 @@ export interface WhotConfig extends Record<string, unknown> {
   semiLastCard: boolean;
   /** 2 and 5 reverse the direction of play. */
   changeDirection: boolean;
+  /** When the market runs out, everyone counts their cards and the lowest total wins. */
+  tender: boolean;
 }
 
 export const WHOT_DEFAULTS: WhotConfig = {
@@ -51,7 +53,8 @@ export const WHOT_DEFAULTS: WhotConfig = {
   starEightDouble: false,
   callRule: true,
   semiLastCard: true,
-  changeDirection: false
+  changeDirection: false,
+  tender: true
 };
 
 export interface WhotLog {
@@ -75,6 +78,8 @@ export interface WhotState {
   winner: number | null;
   over: boolean;
   seq: number;
+  /** How many times the pile has been shuffled back into the market. */
+  reshuffles?: number;
 }
 
 export type WhotMove =
@@ -112,12 +117,18 @@ const nextIndex = (state: WhotState, from: number, steps = 1) => {
   return (((from + state.dir * steps) % n) + n) % n;
 };
 
+/** A game can never run longer than this many moves. */
+const MAX_MOVES = 1200;
+
 function refill(state: WhotState, rng: Ctx['rng']): void {
   if (state.market.length > 0 || state.pile.length <= 1) return;
+  // With tender on, the pile goes back into the market once. The next time it finishes, everyone counts.
+  if (state.config.tender && (state.reshuffles ?? 0) >= 1) return;
   const top = state.pile.pop()!;
   state.market = rng.shuffle(state.pile);
   state.pile = [top];
-  state.log.push({ by: -1, text: 'Market reshuffled from the pile.' });
+  state.reshuffles = (state.reshuffles ?? 0) + 1;
+  state.log.push({ by: -1, text: state.config.tender ? 'Market reshuffled. When it finishes again, everyone tenders.' : 'Market reshuffled from the pile.' });
 }
 
 function draw(state: WhotState, who: number, count: number, rng: Ctx['rng']): number {
@@ -153,6 +164,18 @@ function endIfStuck(s: WhotState): void {
   }
 }
 
+/** Tender: the market has finished, so everyone counts. Also ends any game that has gone on far too long. */
+function endIfDone(s: WhotState): void {
+  if (s.over) return;
+  if (s.config.tender && s.market.length === 0 && ((s.reshuffles ?? 0) >= 1 || s.pile.length <= 1)) {
+    s.over = true;
+    pushLog(s, { by: -1, text: 'Market finished! Everyone tenders their cards.' });
+  } else if (s.seq >= MAX_MOVES) {
+    s.over = true;
+    pushLog(s, { by: -1, text: 'That went on long enough. Everyone counts their cards.' });
+  }
+}
+
 export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
   id: 'whot',
   minPlayers: 2,
@@ -182,7 +205,8 @@ export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
       passes: 0,
       winner: null,
       over: false,
-      seq: 0
+      seq: 0,
+      reshuffles: 0
     };
   },
   actors(state) {
@@ -221,6 +245,7 @@ export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
       }
       s.turn = nextIndex(s, me);
       endIfStuck(s);
+      endIfDone(s);
       return s;
     }
 
@@ -279,6 +304,7 @@ export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
     }
 
     s.turn = next;
+    endIfDone(s);
     return s;
   },
   result(state) {
@@ -299,7 +325,7 @@ export const whot: GameDef<WhotState, WhotMove, WhotConfig> = {
       ranking,
       scores,
       draw: ranking[0].length > 1,
-      summary: state.winner !== null ? 'Check up! First to empty their hand wins.' : 'Market ran dry. Lowest hand wins.'
+      summary: state.winner !== null ? 'Check up! First to empty their hand wins.' : state.config.tender && state.market.length === 0 ? 'Market finished. Lowest tender wins.' : 'Cards counted. Lowest hand wins.'
     };
   },
   view(state, viewer) {

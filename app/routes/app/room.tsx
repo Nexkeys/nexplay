@@ -210,6 +210,11 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
                       )}
                     </small>
                   </span>
+                  {s.wins > 0 && (
+                    <span className="wins" aria-label={`${s.wins} ${s.wins === 1 ? 'win' : 'wins'} this session`}>
+                      <Icon name="trophy" size={14} /> {s.wins}
+                    </span>
+                  )}
                   {(s.ready || s.id === meta.hostUid) && s.connected && <span className="ready-dot" aria-hidden="true" />}
                   {room.isHost && s.id !== room.uid && (
                     <button className="kick" onClick={() => room.actions.kick(s.id)} aria-label={`Remove ${s.name}`}>

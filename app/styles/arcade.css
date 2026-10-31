@@ -881,6 +881,18 @@
 .seats .empty .who b {
   color: var(--mute);
 }
+.seats .wins {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(232, 180, 80, 0.14);
+  color: var(--brass);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 14px;
+}
 .ready-dot {
   width: 10px;
   height: 10px;

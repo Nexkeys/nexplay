@@ -223,3 +223,24 @@ describe('Trivia scoring', () => {
     expect(triviaPoints(200, 20000, 10)).toBe(1500);
   });
 });
+
+describe('whot always ends', () => {
+  it('four and eight player games finish well inside 200 moves with tender on', async () => {
+    const { whot } = await import('~/engine/games/whot');
+    const { createRng } = await import('~/engine/rng');
+    for (const n of [4, 8]) {
+      for (let seed = 1; seed <= 40; seed++) {
+        const players = Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `p${i}`, bot: 'medium' as const }));
+        const ctx = { rng: createRng(seed), now: 0 };
+        let s = whot.setup(players, whot.defaultConfig, ctx);
+        let moves = 0;
+        while (!whot.result(s) && moves < 200) {
+          const who = whot.actors(s)[0];
+          s = whot.apply(s, who, whot.bot(s, who, 'medium', ctx)!, ctx);
+          moves++;
+        }
+        expect(whot.result(s), `${n} players, seed ${seed}`).not.toBeNull();
+      }
+    }
+  });
+});

@@ -8,6 +8,8 @@ export interface MathConfig extends Record<string, unknown> {
   mode: MathMode;
   level: MathLevel;
   questions: number;
+  /** Make 24 only: how many puzzles. */
+  puzzles: number;
 }
 
 export interface MathState {
@@ -179,11 +181,11 @@ export const quickMath: GameDef<MathState, MathMove, MathConfig> = {
   minPlayers: 1,
   maxPlayers: 8,
   selfTimed: true,
-  defaultConfig: { mode: 'sprint', level: 'medium', questions: 15 },
+  defaultConfig: { mode: 'sprint', level: 'medium', questions: 15, puzzles: 5 },
   setup(players, config, { rng, now }) {
     const mode: MathMode = config.mode === 'make24' ? 'make24' : 'sprint';
     const level: MathLevel = (['easy', 'medium', 'hard'] as const).includes(config.level) ? config.level : 'medium';
-    const total = mode === 'make24' ? Math.min(10, Math.max(3, Number(config.questions) || 5)) : Math.min(30, Math.max(5, Number(config.questions) || 15));
+    const total = mode === 'make24' ? Math.min(10, Math.max(3, Number(config.puzzles) || 5)) : Math.min(30, Math.max(5, Number(config.questions) || 15));
     const ids = players.map((p) => p.id);
     const base: MathState = {
       mode, level, players: ids,
@@ -232,6 +234,8 @@ export const quickMath: GameDef<MathState, MathMove, MathConfig> = {
       streak: { ...s.streak, [player]: streak },
       scores: { ...s.scores, [player]: s.scores[player] + points }
     };
+    // Make 24: once someone has solved it, everyone else has 15 seconds left.
+    if (n.mode === 'make24' && ok && solvedBefore === 0) n.deadline = Math.min(n.deadline, now + 15_000);
     const done = n.players.every((p) => (n.mode === 'sprint' ? n.answered[p] : n.answered[p]?.ok));
     return done ? close(n, now) : n;
   },
