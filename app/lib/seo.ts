@@ -2,7 +2,7 @@
 export const AGENCY_URL = 'https://nexkeysagency.com.ng';
 
 /** The public address of the site. Set VITE_SITE_URL in Vercel if you use a different domain. */
-export const SITE = (import.meta.env.VITE_SITE_URL ?? 'https://nexplay.vercel.app').replace(/\/$/, '');
+export const SITE = (import.meta.env.VITE_SITE_URL ?? 'https://nexplay-ng.vercel.app').replace(/\/$/, '');
 
 export function seo({ title, description, path, image = '/og.png', jsonLd }: { title: string; description: string; path: string; image?: string; jsonLd?: object }) {
   const url = `${SITE}${path}`;

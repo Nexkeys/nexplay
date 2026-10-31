@@ -27,10 +27,10 @@ Game rules live in `app/engine/games`, one pure state machine per game, with tes
 
 1. In the Firebase console for `nexplay-948af`:
    - Authentication, Sign in method: turn on **Anonymous** and **Google**.
-   - Authentication, Settings, Authorized domains: add your Vercel address, for example `nexplay.vercel.app`.
+   - Authentication, Settings, Authorized domains: add your Vercel address, for example `nexplay-ng.vercel.app`.
    - Realtime Database, Rules: paste the contents of `database.rules.json` and publish.
 2. Import the repository into Vercel. The settings come from `vercel.json`. Optional environment variables:
-   - `VITE_SITE_URL`: your public address, used for canonical links and social previews (defaults to `https://nexplay.vercel.app`).
+   - `VITE_SITE_URL`: your public address, used for canonical links and social previews (defaults to `https://nexplay-ng.vercel.app`).
    - `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_DATABASE_URL`: only if you move to another Firebase project.
 
 ## Development
