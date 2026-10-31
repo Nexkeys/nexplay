@@ -131,6 +131,35 @@
 .pbtn:hover svg {
   transform: translateX(3px);
 }
+.pacct {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 16px 0 5px;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 15px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s;
+}
+.pacct:hover {
+  background: var(--paper-2);
+}
+.pacct-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 800;
+  color: var(--ink);
+}
 .pmenu {
   display: none;
   width: 46px;
@@ -166,7 +195,8 @@
   flex-direction: column;
   animation: drop 0.3s var(--ease);
 }
-.pdrawer a {
+.pdrawer a,
+.pdrawer-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -176,6 +206,11 @@
   font-size: 26px;
   letter-spacing: -0.03em;
   border-bottom: 1px solid var(--ink-line);
+}
+.pdrawer-btn {
+  width: 100%;
+  color: var(--p-coral);
+  text-align: left;
 }
 @keyframes drop {
   from {

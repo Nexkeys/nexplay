@@ -4,6 +4,7 @@ import { Icon } from '~/components/Icon';
 import { Logo } from '~/components/Logo';
 import { GAMES } from '~/engine/catalog';
 import { AGENCY_URL } from '~/lib/seo';
+import { useAccount } from '~/lib/useAccount';
 import '~/styles/public.css';
 
 const LINKS = [
@@ -15,6 +16,7 @@ const LINKS = [
 
 export default function PublicLayout() {
   const [open, setOpen] = useState(false);
+  const { account, signOut } = useAccount();
   const loc = useLocation();
   useEffect(() => setOpen(false), [loc.pathname]);
 
@@ -35,9 +37,23 @@ export default function PublicLayout() {
           ))}
         </nav>
         <div className="pcta">
-          <Link to="/profile" className="pbtn ghost hide-sm">
-            Sign in
-          </Link>
+          {account ? (
+            <>
+              <Link to="/profile" className="pacct hide-sm" aria-label="Your profile">
+                <span className="pacct-av" style={{ background: account.avatar }}>
+                  {account.name[0]?.toUpperCase()}
+                </span>
+                {account.name}
+              </Link>
+              <button className="pbtn ghost hide-sm" onClick={() => signOut()}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link to="/profile" className="pbtn ghost hide-sm">
+              Sign in
+            </Link>
+          )}
           <Link to="/play" className="pbtn">
             Play now
           </Link>
@@ -55,10 +71,23 @@ export default function PublicLayout() {
               <Icon name="arrow" />
             </NavLink>
           ))}
-          <Link to="/profile">
-            Sign in
-            <Icon name="arrow" />
-          </Link>
+          {account ? (
+            <>
+              <Link to="/profile">
+                {account.name}
+                <Icon name="arrow" />
+              </Link>
+              <button className="pdrawer-btn" onClick={() => signOut()}>
+                Sign out
+                <Icon name="logout" />
+              </button>
+            </>
+          ) : (
+            <Link to="/profile">
+              Sign in
+              <Icon name="arrow" />
+            </Link>
+          )}
         </nav>
       )}
 
