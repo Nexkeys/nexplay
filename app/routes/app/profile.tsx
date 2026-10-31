@@ -17,7 +17,6 @@ export default function ProfilePage() {
   const profile = useProfile();
   const [name, setName] = useState(id.name);
   const [saved, setSaved] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
   useEffect(() => setName(id.name), [id.name]);
 
   const xp = profile?.xp ?? 0;
@@ -38,14 +37,11 @@ export default function ProfilePage() {
     if (id.uid) syncLeaderboardName(id.uid, id.name, c).catch(() => {});
   };
 
+  const [going, setGoing] = useState(false);
   const google = async () => {
-    setErr(null);
-    try {
-      await id.signInWithGoogle();
-    } catch (e) {
-      const code = (e as { code?: string }).code ?? '';
-      setErr(code.includes('unauthorized-domain') ? 'Google sign in is not set up for this web address yet.' : code.includes('operation-not-allowed') ? 'Google sign in is switched off for this project.' : 'Google sign in did not work. Try again.');
-    }
+    setGoing(true);
+    await id.signInWithGoogle();
+    setGoing(false);
   };
 
   return (
@@ -89,10 +85,10 @@ export default function ProfilePage() {
           {id.isGuest ? (
             <>
               <p className="muted">You are playing as a guest. Your progress lives on this device. Sign in with Google to keep it safe and use it on any device.</p>
-              <button className="btn google" onClick={google}>
-                <Icon name="google" /> Continue with Google
+              <button className="btn google" onClick={google} disabled={going}>
+                <Icon name="google" /> {going ? 'Opening Google…' : 'Continue with Google'}
               </button>
-              {err && <p className="err">{err}</p>}
+              {id.googleError && <p className="err">{id.googleError}</p>}
             </>
           ) : (
             <>

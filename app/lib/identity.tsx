@@ -9,6 +9,8 @@ export interface Identity {
   isGuest: boolean;
   email: string | null;
   error: string | null;
+  /** Why the last Google sign in did not work, if it did not. */
+  googleError: string | null;
   setName(name: string): void;
   setAvatar(colour: string): void;
   signInWithGoogle(): Promise<void>;
@@ -38,12 +40,25 @@ const write = (key: string, value: string) => {
   }
 };
 
+const GOOGLE_FAILED = 'Google sign in did not work. Try again.';
+const googleMessage = (code: string) =>
+  code.includes('unauthorized-domain')
+    ? 'Google sign in is not set up for this web address yet.'
+    : code.includes('operation-not-allowed')
+      ? 'Google sign in is switched off for this project.'
+      : code.includes('network')
+        ? 'Could not reach Google. Check your internet and try again.'
+        : GOOGLE_FAILED;
+
 export const cleanName = (name: string) => name.replace(/[^\p{L}\p{N} .'_-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 18);
 
 const IdentityContext = createContext<Identity | null>(null);
 
 export function IdentityProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  // Linking Google to a guest changes the same user object, so bump this to refresh what the app shows.
+  const [rev, setRev] = useState(0);
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setNameState] = useState('');
@@ -65,8 +80,29 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
 
     let unsub = () => {};
     (async () => {
-      const [{ auth }, { onAuthStateChanged, signInAnonymously }] = await Promise.all([import('./firebase'), import('firebase/auth')]);
+      const [{ auth }, fa] = await Promise.all([import('./firebase'), import('firebase/auth')]);
+      const { onAuthStateChanged, signInAnonymously } = fa;
       const a = auth();
+      // Coming back from Google: finish the sign in before deciding the player is a guest.
+      try {
+        const res = await fa.getRedirectResult(a);
+        if (res?.user) {
+          setUser(res.user);
+          setRev((r) => r + 1);
+        }
+      } catch (e) {
+        const code = (e as { code?: string }).code ?? '';
+        if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
+          // That Google account already plays NexPlay: switch to it.
+          const cred = fa.GoogleAuthProvider.credentialFromError(e as Parameters<typeof fa.GoogleAuthProvider.credentialFromError>[0]);
+          if (cred) await fa.signInWithCredential(a, cred).catch(() => setGoogleError(GOOGLE_FAILED));
+        } else if (code === 'auth/provider-already-linked') {
+          await a.currentUser?.reload().catch(() => {});
+          setRev((r) => r + 1);
+        } else {
+          setGoogleError(googleMessage(code));
+        }
+      }
       unsub = onAuthStateChanged(a, async (u) => {
         if (u) {
           setUser(u);
@@ -107,23 +143,20 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
     write(AVATAR_KEY, c);
   }, []);
 
+  // A full page redirect, not a popup: browsers that isolate Google's sign in window break popups.
   const signInWithGoogle = useCallback(async () => {
+    setGoogleError(null);
     const [{ auth }, fa] = await Promise.all([import('./firebase'), import('firebase/auth')]);
     const a = auth();
     const provider = new fa.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     try {
       // Linking keeps the guest account's uid, so stats carry over.
-      if (a.currentUser?.isAnonymous) await fa.linkWithPopup(a.currentUser, provider);
-      else await fa.signInWithPopup(a, provider);
+      if (a.currentUser?.isAnonymous) await fa.linkWithRedirect(a.currentUser, provider);
+      else await fa.signInWithRedirect(a, provider);
     } catch (e) {
-      const code = (e as { code?: string }).code;
-      if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') {
-        await fa.signInWithPopup(a, provider);
-      } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
-        throw e;
-      }
+      setGoogleError(googleMessage((e as { code?: string }).code ?? ''));
     }
-    setUser(a.currentUser);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -140,12 +173,14 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
       isGuest: !user || user.isAnonymous,
       email: user?.email ?? null,
       error,
+      googleError,
       setName,
       setAvatar,
       signInWithGoogle,
       signOut
     }),
-    [ready, user, name, avatar, error, setName, setAvatar, signInWithGoogle, signOut]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ready, user, rev, name, avatar, error, googleError, setName, setAvatar, signInWithGoogle, signOut]
   );
 
   return <IdentityContext.Provider value={value}>{children}</IdentityContext.Provider>;

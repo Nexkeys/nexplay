@@ -1,12 +1,18 @@
 import { getApps, initializeApp, type FirebaseApp } from 'firebase/app';
 import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth';
 import { connectDatabaseEmulator, getDatabase, onValue, ref, type Database } from 'firebase/database';
+import { SITE } from './seo';
 
 // Web config for the nexplay-948af project. These values are public by design: they identify the
 // project to Firebase, and access is controlled by Authentication and the database rules.
+// On the live site, sign in pages are served from the site's own domain (vercel.json passes /__/auth
+// through to Firebase). Browsers that block third party storage need this for Google sign in.
+const LIVE_HOST = new URL(SITE).host;
+const onLiveSite = typeof window !== 'undefined' && window.location.host === LIVE_HOST;
+
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyA7qjvGQD_cKLH773qIBhIV0sH16E4VDbs',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? 'nexplay-948af.firebaseapp.com',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? (onLiveSite ? LIVE_HOST : 'nexplay-948af.firebaseapp.com'),
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL ?? 'https://nexplay-948af-default-rtdb.firebaseio.com',
   projectId: 'nexplay-948af',
   storageBucket: 'nexplay-948af.firebasestorage.app',
