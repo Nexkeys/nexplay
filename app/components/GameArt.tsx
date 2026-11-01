@@ -1,4 +1,8 @@
 import type { GameId } from '~/engine/types';
+import { ArenaArt } from './art/ArenaArt';
+import { InSyncArt } from './art/InSyncArt';
+import { LoveLockArt } from './art/LoveLockArt';
+import { LudoArt } from './art/LudoArt';
 
 /** Flat illustrations for each game, used on cards in both the public site and the app. */
 export function GameArt({ id, size = 150 }: { id: GameId; size?: number }) {
@@ -114,6 +118,14 @@ export function GameArt({ id, size = 150 }: { id: GameId; size?: number }) {
           </text>
         </svg>
       );
+    case 'ludo':
+      return <LudoArt size={w} />;
+    case 'arena':
+      return <ArenaArt size={w} />;
+    case 'in-sync':
+      return <InSyncArt size={w} />;
+    case 'love-lock':
+      return <LoveLockArt size={w} />;
     case 'trivia':
       return (
         <svg width={w * 0.9} height={w * 0.6} viewBox="0 0 150 100" aria-hidden="true">

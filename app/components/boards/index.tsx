@@ -13,5 +13,9 @@ export const BOARDS: Record<GameId, React.LazyExoticComponent<Board>> = {
   rps: lazy(() => import('./Rps')),
   'word-race': lazy(() => import('./WordRace')),
   'quick-math': lazy(() => import('./QuickMath')),
-  trivia: lazy(() => import('./Trivia'))
+  trivia: lazy(() => import('./Trivia')),
+  ludo: lazy(() => import('./Ludo')),
+  arena: lazy(() => import('./Arena')),
+  'in-sync': lazy(() => import('./InSync')),
+  'love-lock': lazy(() => import('./LoveLock'))
 };

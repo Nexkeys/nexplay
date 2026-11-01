@@ -14,7 +14,8 @@ const FILTERS = [
   { id: 'all', label: 'All games' },
   { id: 'classic', label: 'Naija classics' },
   { id: 'board', label: 'Board' },
-  { id: 'party', label: 'Party, 2 to 8' }
+  { id: 'party', label: 'Party, 2 to 8' },
+  { id: 'couples', label: 'Couples' }
 ] as const;
 
 export default function Play() {

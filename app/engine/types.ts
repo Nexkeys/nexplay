@@ -1,7 +1,19 @@
 export type PlayerId = string;
 export type BotLevel = 'easy' | 'medium' | 'hard';
 
-export type GameId = 'ayo' | 'whot' | 'connect-four' | 'tic-tac-toe' | 'rps' | 'word-race' | 'quick-math' | 'trivia';
+export type GameId =
+  | 'ayo'
+  | 'whot'
+  | 'connect-four'
+  | 'tic-tac-toe'
+  | 'rps'
+  | 'word-race'
+  | 'quick-math'
+  | 'trivia'
+  | 'in-sync'
+  | 'love-lock'
+  | 'arena'
+  | 'ludo';
 
 export interface PlayerInfo {
   id: PlayerId;

@@ -56,7 +56,7 @@ export default function Home() {
           <span className="eyebrow">Free · No download · Phone or laptop</span>
           <Split text="Game night without the travel." className="hero-h" highlight="without" />
           <motion.p className="lede" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}>
-            Ayo, Whot! and six other games, played live with your friends or anyone online. Send a code, pull up a chair, talk your talk.
+            Ayo, Whot!, Ludo and nine other games, played live with your friends or anyone online. Send a code, pull up a chair, talk your talk.
           </motion.p>
           <motion.div className="hero-cta" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.7 }}>
             <Link to="/play" className="pbtn big coral">
@@ -104,7 +104,7 @@ export default function Home() {
         <Split as="h2" text="Three taps to the table." className="sec-h" />
         <div className="steps">
           {[
-            { n: '01', h: 'Pick a game', p: 'Eight games, from Whot and Ayo to trivia for up to eight players. Set the house rules your way.' },
+            { n: '01', h: 'Pick a game', p: 'Twelve games, from Whot, Ayo and Ludo to trivia for up to eight players and games for couples. Set the house rules your way.' },
             { n: '02', h: 'Share the code', p: 'Every room gets a short code and an invite link. Drop it in the group chat.', code: true },
             { n: '03', h: 'Play live', p: 'Moves land instantly on every screen. Talk trash with reactions and run it back with one tap.' }
           ].map((s, i) => (

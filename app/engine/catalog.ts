@@ -1,3 +1,7 @@
+import { ARENA } from './meta/arena';
+import { IN_SYNC } from './meta/in-sync';
+import { LOVE_LOCK } from './meta/love-lock';
+import { LUDO } from './meta/ludo';
 import type { AnyGame, GameId } from './types';
 
 export interface Option {
@@ -27,7 +31,7 @@ export interface GameMeta {
   blurb: string;
   players: [number, number];
   minutes: string;
-  family: 'classic' | 'board' | 'party';
+  family: 'classic' | 'board' | 'party' | 'couples';
   colour: string;
   isNew?: boolean;
   settings: Setting[];
@@ -320,16 +324,20 @@ export const GAMES: GameMeta[] = [
     rules: [
       { title: 'How it works', body: ['Everyone sees the same question with four answers. Pick one before the timer runs out.'] },
       { title: 'Scoring', body: ['A correct answer is worth up to 1,000 points: the faster you answer, the more you get. Two or more correct answers in a row add a streak bonus of up to 500.'] },
-      { title: 'Packs', body: ['Naija, Afrobeats, Football, Nollywood and Tech packs are written by NexPlay. General knowledge, science, geography, history, music, film and animals questions come from the Open Trivia Database (opentdb.com), licensed CC BY-SA 4.0.'] }
+      { title: 'Packs', body: ['Naija, Afrobeats, Football, Nollywood and Tech packs are written by NexPlay. Most general knowledge, science, geography, history, music, film, animals and sport questions come from the Open Trivia Database (opentdb.com) and OpenTriviaQA, both licensed CC BY-SA 4.0. Country and element questions are made from open data.', 'You will not see a question again until you have played through the whole pack.'] }
     ],
     tips: ['Speed matters, but a wrong answer breaks your streak.'],
     keywords: ['naija trivia', 'afrobeats quiz', 'nigerian quiz game online']
-  }
+  },
+  LUDO,
+  ARENA,
+  IN_SYNC,
+  LOVE_LOCK
 ];
 
 export const gameIds = GAMES.map((g) => g.id);
 /** Games played in turns. These get a turn timer; the others run on their own round clocks. */
-export const isTurnBased = (id: GameId) => id === 'ayo' || id === 'whot' || id === 'connect-four' || id === 'tic-tac-toe';
+export const isTurnBased = (id: GameId) => id === 'ayo' || id === 'whot' || id === 'connect-four' || id === 'tic-tac-toe' || id === 'ludo';
 /** Turn timer choices, in seconds. */
 export const TURN_TIMERS = [15, 30, 60];
 export const gameMeta = (id: string) => GAMES.find((g) => g.id === id);
@@ -353,5 +361,13 @@ export async function loadGame(id: GameId): Promise<AnyGame> {
       return (await import('./games/quick-math')).quickMath;
     case 'trivia':
       return (await import('./games/trivia')).trivia;
+    case 'ludo':
+      return (await import('./games/ludo')).ludo;
+    case 'arena':
+      return (await import('./games/arena')).arena;
+    case 'in-sync':
+      return (await import('./games/in-sync')).inSync;
+    case 'love-lock':
+      return (await import('./games/love-lock')).loveLock;
   }
 }

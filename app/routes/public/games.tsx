@@ -8,7 +8,7 @@ import { seo } from '~/lib/seo';
 export function meta() {
   return seo({
     title: 'All games · NexPlay',
-    description: 'Whot, Ayo, Connect Four, Tic Tac Toe, Rock Paper Scissors, Word Race, Quick Math and Trivia. Rules, tips and how to play each one online.',
+    description: 'Whot, Ayo, Ludo, Connect Four, Tic Tac Toe, Rock Paper Scissors, Arena, Word Race, Quick Math, Trivia, In Sync and Love Lock. Rules, tips and how to play each one online.',
     path: '/games'
   });
 }
@@ -16,14 +16,15 @@ export function meta() {
 const GROUPS = [
   { id: 'classic', title: 'Naija classics', text: 'The games of every compound, school break and family gathering.' },
   { id: 'board', title: 'Board games', text: 'Two players, one board, no luck. Just you and your head.' },
-  { id: 'party', title: 'Party games', text: 'Up to eight players racing on the same clock. Great for group calls.' }
+  { id: 'party', title: 'Party games', text: 'Up to eight players racing on the same clock. Great for group calls.' },
+  { id: 'couples', title: 'For couples', text: 'Made for two. Play together on date night, near or far.' }
 ] as const;
 
 export default function Games() {
   return (
     <div className="page-p">
       <header className="ph">
-        <span className="eyebrow">Eight games · rules for every one</span>
+        <span className="eyebrow">Twelve games · rules for every one</span>
         <Split text="Every game on the table." className="ph-h" highlight="table" />
         <p className="lede">Tap a game for the full rules, tips and the house rules you can change. Then pull up a chair.</p>
       </header>
