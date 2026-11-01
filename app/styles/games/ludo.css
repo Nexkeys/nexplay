@@ -1,0 +1,370 @@
+/* Ludo: a square board in a wooden frame, players at the four corners, the dice at the bottom. */
+.board-ludo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ludo-table {
+  /* As wide as the stage allows, but never taller than the screen can show. */
+  width: min(100%, 640px, max(280px, calc(100dvh - 268px)));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ludo-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+}
+.ludo-row.bottom {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+.ludo-row > :nth-child(2):not(.ludo-dice),
+.ludo-row.bottom > :last-child {
+  justify-self: end;
+}
+.ludo-seat {
+  min-width: 0;
+  max-width: 100%;
+  padding: 3px 8px 3px 3px;
+  border-radius: 999px;
+  transition: background 0.3s;
+}
+.ludo-seat:has(.chip-player.r) {
+  padding: 3px 3px 3px 8px;
+}
+.ludo-seat.on {
+  background: color-mix(in srgb, var(--pc) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 45%, transparent);
+}
+.board-ludo .chip-player {
+  gap: 7px;
+}
+.board-ludo .chip-player .ring {
+  width: 40px;
+  height: 40px;
+  padding: 3px;
+}
+.board-ludo .chip-player .ring .av {
+  --size: 34px !important;
+}
+.board-ludo .chip-player .who b {
+  font-size: 14.5px;
+}
+.board-ludo .chip-player .who small {
+  font-size: 11px;
+  gap: 5px;
+}
+.ludo-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ludo-dots svg {
+  display: inline-block;
+  width: 36px;
+  height: auto;
+}
+.ludo-dots b {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  color: var(--cream-2);
+}
+.chip-player.r .ludo-dots {
+  flex-direction: row-reverse;
+}
+
+/* the board */
+.ludo-frame {
+  padding: clamp(5px, 1.2vw, 10px);
+  border-radius: clamp(14px, 2.4vw, 22px);
+  background: linear-gradient(160deg, #8a5630, #5b3519 55%, #44260f);
+  box-shadow: inset 0 2px 0 rgba(255, 220, 170, 0.28), inset 0 -4px 10px rgba(0, 0, 0, 0.35), 0 24px 50px -18px rgba(0, 0, 0, 0.8);
+}
+.ludo-board {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: clamp(6px, 1.2vw, 12px);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  touch-action: manipulation;
+}
+.ludo-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.ludo-svg .lc {
+  stroke: rgba(58, 38, 24, 0.28);
+  stroke-width: 0.035;
+}
+.ludo-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* seeds: each is one cell wide and moved in whole cells with translate */
+.ludo-seed {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(100% / 15);
+  height: calc(100% / 15);
+  padding: 0;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+}
+.ludo-seed .hop {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ludo-seed .tok {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ludo-seed.moving .hop {
+  animation: ludo-hop 0.16s ease-out;
+}
+.ludo-seed.knocked .hop {
+  animation: ludo-knock 0.7s var(--ease);
+}
+.ludo-seed.can {
+  cursor: pointer;
+}
+/* a bigger target for small fingers */
+.ludo-seed.can::after {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+}
+.ludo-seed.can::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fffaf0, 0 0 10px 3px var(--turn);
+  animation: ludo-glow 0.9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.ludo-seed.can .hop {
+  animation: ludo-bob 0.9s ease-in-out infinite alternate;
+}
+.ludo-seed:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+.ludo-target {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(100% / 15);
+  height: calc(100% / 15);
+  pointer-events: none;
+}
+.ludo-target::before {
+  content: '';
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--turn) 80%, #000);
+  opacity: 0.7;
+  animation: ludo-spin-slow 4s linear infinite;
+}
+.ludo-burst {
+  position: absolute;
+  width: calc(100% / 15);
+  height: calc(100% / 15);
+  translate: -50% -50%;
+  pointer-events: none;
+  z-index: 6;
+}
+.ludo-burst svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* the dice */
+.ludo-dice {
+  position: relative;
+  width: clamp(64px, 17vw, 84px);
+  aspect-ratio: 1;
+  padding: 6px;
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--dc) 40%, transparent), transparent 70%);
+  transition: background 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ludo-dice:disabled {
+  cursor: default;
+}
+.ludo-dice .die {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+}
+.ludo-dice .die-svg {
+  width: 100%;
+  height: 100%;
+}
+.ludo-dice.can::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--dc), 0 0 22px 2px var(--dc);
+  animation: ludo-glow 0.8s ease-in-out infinite alternate;
+}
+.ludo-dice.can .die {
+  animation: ludo-nudge 1.6s ease-in-out infinite;
+}
+.ludo-dice.can:active .die {
+  scale: 0.92;
+}
+.ludo-dice.rolling .die {
+  animation: ludo-tumble 0.42s linear infinite;
+}
+
+.ludo-status {
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  min-height: 1.35em;
+  color: var(--cream);
+}
+.ludo-meta {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--mute);
+  margin-top: -4px;
+}
+
+@keyframes ludo-hop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-38%) scale(1.18);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes ludo-knock {
+  0% {
+    transform: rotate(0) scale(1.3);
+    filter: brightness(1.8);
+  }
+  60% {
+    transform: rotate(540deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(720deg) scale(1);
+    filter: none;
+  }
+}
+@keyframes ludo-glow {
+  from {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes ludo-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-12%);
+  }
+}
+@keyframes ludo-spin-slow {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes ludo-nudge {
+  0%,
+  70%,
+  100% {
+    rotate: 0deg;
+  }
+  78% {
+    rotate: -9deg;
+  }
+  86% {
+    rotate: 7deg;
+  }
+  93% {
+    rotate: -3deg;
+  }
+}
+@keyframes ludo-tumble {
+  0% {
+    transform: rotate(0) translateY(0) scale(1);
+  }
+  25% {
+    transform: rotate(95deg) translateY(-10%) scale(0.92);
+  }
+  50% {
+    transform: rotate(185deg) translateY(0) scale(1.04);
+  }
+  75% {
+    transform: rotate(270deg) translateY(-8%) scale(0.94);
+  }
+  100% {
+    transform: rotate(360deg) translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 720px) {
+  .ludo-table {
+    gap: 6px;
+  }
+  .ludo-seat {
+    padding-right: 4px;
+  }
+  .ludo-seat:has(.chip-player.r) {
+    padding-left: 4px;
+  }
+  .ludo-status {
+    font-size: 14px;
+  }
+}
+@media (max-width: 380px) {
+  .board-ludo .chip-player .ring {
+    width: 36px;
+    height: 36px;
+  }
+  .board-ludo .chip-player .ring .av {
+    --size: 30px !important;
+  }
+  .board-ludo .chip-player .who b {
+    font-size: 13.5px;
+  }
+  .ludo-dots svg {
+    width: 30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ludo-seed.can .hop,
+  .ludo-dice.can .die,
+  .ludo-target::before {
+    animation: none;
+  }
+}
