@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadGame } from '~/engine/catalog';
 import type { AnyGame, BotLevel, GameId } from '~/engine/types';
 import { MatchRunner, type Snapshot } from './runner';
+import { addSeen, loadSeen } from './seen';
 import type { Seat, StageProps } from './stage';
 
 const BOT_NAMES = ['Ada', 'Bayo', 'Chidi', 'Dami', 'Efe', 'Femi', 'Gozie'];
@@ -57,9 +58,21 @@ export function useLocalMatch(setup: LocalSetup | null) {
       { turnSeconds: setup.turnSeconds, now: Date.now, onUpdate: setSnap }
     );
     runner.current = r;
-    r.start(setup.config);
-    const t = setInterval(() => r.step(), 150);
-    return () => clearInterval(t);
+    let live = true;
+    let t: ReturnType<typeof setInterval> | null = null;
+    const avoid = new Set(loadSeen(setup.game));
+    const config = { ...game.defaultConfig, ...setup.config };
+    (game.prepare?.(config, avoid) ?? Promise.resolve())
+      .then(() => {
+        if (!live) return;
+        r.start(setup.config, avoid);
+        t = setInterval(() => r.step(), 150);
+      })
+      .catch(() => live && setError('Could not load the game. Check your connection and try again.'));
+    return () => {
+      live = false;
+      if (t) clearInterval(t);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game, round, setup?.game, setup?.opponents, setup?.level, setup?.turnSeconds, JSON.stringify(setup?.config)]);
 
@@ -81,10 +94,16 @@ export function useLocalMatch(setup: LocalSetup | null) {
     if (err) setTimeout(() => setError(null), 2600);
   }, [setup?.me.id]);
 
+  const myView = snap && setup ? snap.viewFor(setup.me.id) : null;
+  const seenIds = myView && game?.seen ? game.seen(myView).join(' ') : '';
+  useEffect(() => {
+    if (seenIds && setup) addSeen(setup.game, seenIds.split(' '));
+  }, [seenIds, setup?.game]);
+
   const stage: StageProps | null =
     snap && setup
       ? {
-          view: snap.viewFor(setup.me.id),
+          view: myView,
           me: setup.me.id,
           seats,
           actors: snap.actors,

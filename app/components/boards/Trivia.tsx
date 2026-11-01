@@ -95,6 +95,7 @@ export default function TriviaBoard({ view, me, seats, send, now, result }: Stag
                     : 'Watching…'}
             </p>
             {q.source === 'otdb' && <p className="credit">Question from the Open Trivia Database, CC BY-SA 4.0</p>}
+            {q.source === 'otqa' && <p className="credit">Question from OpenTriviaQA, CC BY-SA 4.0</p>}
           </motion.div>
         </AnimatePresence>
       </div>

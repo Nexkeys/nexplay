@@ -19,6 +19,8 @@ export interface Rng {
 export interface Ctx {
   rng: Rng;
   now: number;
+  /** Questions or words the players have already had, so setup can pick fresh ones. */
+  avoid?: ReadonlySet<string>;
 }
 
 export interface MatchResult {
@@ -56,6 +58,13 @@ export interface GameDef<S, M, C extends Record<string, unknown>> {
   random?(state: S, player: PlayerId, ctx: Ctx): M | null;
   /** True when the game handles its own clock, so the room should not add a turn timer. */
   selfTimed?: boolean;
+  /**
+   * Downloads what setup needs (question packs, word lists) before a match starts. When resuming a
+   * saved match, `state` is passed so the game can load what that match uses.
+   */
+  prepare?(config: C, avoid: ReadonlySet<string>, state?: S): Promise<void>;
+  /** Ids of the questions or words a player has been shown, read from their view. Used to avoid repeats. */
+  seen?(view: unknown): string[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,3 @@
-import unscrambleData from '../data/unscramble.json';
-import huntData from '../data/word-hunt.json';
 import { botPlan, hash01 } from '../timed';
 import type { GameDef, MatchResult, PlayerId, Rng } from '../types';
 
@@ -30,10 +28,50 @@ export interface WordState {
   found: Record<PlayerId, string[]>;
   scores: Record<PlayerId, number>;
   feed: { by: PlayerId; text: string; points: number }[];
-  history: { letters: string; answer: string; winner: PlayerId | null }[];
+  history: { id: string; letters: string; answer: string; winner: PlayerId | null }[];
+  /** The puzzle for each round, picked at the start. Never sent to players. */
+  queue: Puzzle[];
 }
 
 export type WordMove = { type: 'guess'; word: string };
+
+/** One round: the word to find (Unscramble) or the seed word (Word Hunt), then every accepted answer. */
+type Puzzle = string[];
+
+// Puzzles ship as shards (scripts/build-data.mjs) so a game downloads only a few of them.
+const SHARD_FILES = import.meta.glob<Puzzle[]>('../data/words/*.json', { import: 'default' });
+const SHARDS = Object.keys(SHARD_FILES).map((path) => {
+  const key = path.slice(path.lastIndexOf('/') + 1, -'.json'.length);
+  return { path, key, mode: key.replace(/-\d+$/, '') as WordMode };
+});
+const loaded = new Map<string, Puzzle[]>();
+/** Ids are the mode's first letter and the word, so Unscramble and Word Hunt never clash. */
+const idOf = (mode: WordMode, p: Puzzle) => `${mode[0]}:${p[0]}`;
+/** What `prepare` picked for the next `setup`. */
+let prepared: { mode: WordMode | ''; puzzles: Puzzle[] } = { mode: '', puzzles: [] };
+/** How many fresh puzzles to have on hand before stopping. */
+const ENOUGH = 60;
+
+/** Downloads random shards for the mode until there are enough puzzles nobody at the table has had. */
+async function preparePuzzles(config: WordConfig, avoid: ReadonlySet<string>, state?: WordState) {
+  // A saved match carries its own puzzles.
+  if (state) return;
+  const mode: WordMode = config.mode === 'hunt' ? 'hunt' : 'unscramble';
+  const shards = SHARDS.filter((s) => s.mode === mode)
+    .map((s) => ({ s, r: Math.random() }))
+    .sort((a, b) => a.r - b.r)
+    .map((x) => x.s);
+  const all: Puzzle[] = [];
+  const fresh = () => all.filter((p) => !avoid.has(idOf(mode, p)));
+  for (const s of shards) {
+    if (!loaded.has(s.key)) loaded.set(s.key, await SHARD_FILES[s.path]());
+    all.push(...loaded.get(s.key)!);
+    if (fresh().length >= ENOUGH) break;
+  }
+  const f = fresh();
+  // Only once every puzzle has been seen do repeats come back.
+  prepared = { mode, puzzles: f.length >= 15 ? f : all };
+}
 
 const RESULT_MS = 3200;
 const UNSCRAMBLE_POINTS = [500, 350, 250, 150];
@@ -48,20 +86,19 @@ function scramble(word: string, rng: Rng): string {
 }
 
 function deal(s: WordState, rng: Rng, now: number): WordState {
-  const used = new Set(s.history.map((h) => h.answer));
+  const [word, ...rest] = s.queue[s.round - 1];
   if (s.mode === 'unscramble') {
-    const pool = (unscrambleData as string[][]).filter((g) => !used.has(g[0]));
-    const group = rng.pick(pool);
-    return { ...s, phase: 'play', start: now, deadline: now + s.seconds * 1000, letters: scramble(group[0], rng).toUpperCase(), answers: group, solved: [], found: {} };
+    return { ...s, phase: 'play', start: now, deadline: now + s.seconds * 1000, letters: scramble(word, rng).toUpperCase(), answers: [word, ...rest], solved: [], found: {} };
   }
-  const puzzle = rng.pick((huntData as { seed: string; words: string[] }[]).filter((p) => !used.has(p.seed)));
+  // Word Hunt: the seed's letters, and every word they make, longest first.
   const found = Object.fromEntries(s.players.map((p) => [p, [] as string[]]));
-  return { ...s, phase: 'play', start: now, deadline: now + s.seconds * 1000, letters: scramble(puzzle.seed, rng).toUpperCase(), answers: puzzle.words, solved: [], found };
+  return { ...s, phase: 'play', start: now, deadline: now + s.seconds * 1000, letters: scramble(word, rng).toUpperCase(), answers: rest, solved: [], found };
 }
 
 function closeRound(s: WordState, now: number): WordState {
   const winner = s.mode === 'unscramble' ? s.solved[0] ?? null : Object.entries(s.found).sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? null;
-  const history = [...s.history, { letters: s.letters, answer: s.answers[0], winner }];
+  const puzzle = s.queue[s.round - 1];
+  const history = [...s.history, { id: idOf(s.mode, puzzle), letters: s.letters, answer: s.mode === 'unscramble' ? s.answers[0] : puzzle[0], winner }];
   const over = s.round >= s.rounds;
   return { ...s, history, phase: over ? 'over' : 'result', deadline: over ? 0 : now + RESULT_MS };
 }
@@ -72,8 +109,13 @@ export const wordRace: GameDef<WordState, WordMove, WordConfig> = {
   maxPlayers: 8,
   selfTimed: true,
   defaultConfig: { mode: 'unscramble', rounds: 8, seconds: 30 },
-  setup(players, config, { rng, now }) {
+  prepare: preparePuzzles,
+  seen(view) {
+    return ((view as Partial<WordState> | null)?.history ?? []).map((h) => h.id).filter(Boolean);
+  },
+  setup(players, config, { rng, now, avoid }) {
     const mode: WordMode = config.mode === 'hunt' ? 'hunt' : 'unscramble';
+    if (prepared.mode !== mode || !prepared.puzzles.length) throw new Error('Word puzzles are not loaded yet.');
     const rounds = mode === 'hunt' ? Math.min(3, Math.max(1, Number(config.rounds) || 1)) : Math.min(15, Math.max(3, Number(config.rounds) || 8));
     const seconds = mode === 'hunt' ? Math.min(180, Math.max(45, Number(config.seconds) || 90)) : Math.min(60, Math.max(15, Number(config.seconds) || 30));
     const base: WordState = {
@@ -92,8 +134,12 @@ export const wordRace: GameDef<WordState, WordMove, WordConfig> = {
       found: {},
       scores: Object.fromEntries(players.map((p) => [p.id, 0])),
       feed: [],
-      history: []
+      history: [],
+      queue: []
     };
+    const fresh = prepared.puzzles.filter((p) => !avoid?.has(idOf(mode, p)));
+    base.queue = rng.shuffle(fresh.length >= rounds ? fresh : prepared.puzzles).slice(0, rounds);
+    base.rounds = base.queue.length;
     return deal(base, rng, now);
   },
   actors(s) {
@@ -165,7 +211,9 @@ export const wordRace: GameDef<WordState, WordMove, WordConfig> = {
     }
     return { ranking, scores: s.scores, draw: ranking[0].length > 1, summary: s.mode === 'hunt' ? 'Most points from words found.' : 'Fastest unscrambler wins.' } satisfies MatchResult;
   },
-  view(s, viewer) {
+  view(full, viewer) {
+    // Upcoming puzzles would give the answers away.
+    const s = { ...full, queue: [] };
     if (s.phase !== 'play') return s;
     const mine = viewer ? s.found[viewer] ?? [] : [];
     return {

@@ -1,16 +1,8 @@
-import type { TriviaQuestion } from '../games/trivia';
+// Hand written NexPlay questions. Facts chosen to be stable over time (no "latest", "current" or
+// record counts that change often). `npm run data` merges these into the trivia packs.
+const q = (pack, difficulty, question, a, wrong) => ({ pack, difficulty, q: question, a, wrong, source: 'nexplay' });
 
-// Hand written NexPlay packs. Facts chosen to be stable over time (no "latest" or record counts that change often).
-const q = (pack: string, difficulty: 'easy' | 'medium' | 'hard', question: string, a: string, wrong: [string, string, string]): TriviaQuestion => ({
-  pack,
-  difficulty,
-  q: question,
-  a,
-  wrong,
-  source: 'nexplay'
-});
-
-export const NAIJA_QUESTIONS: TriviaQuestion[] = [
+export const NEXPLAY_QUESTIONS = [
   // Naija
   q('naija', 'easy', 'In what year did Nigeria gain independence?', '1960', ['1957', '1963', '1966']),
   q('naija', 'easy', 'What is the capital of Nigeria?', 'Abuja', ['Lagos', 'Kano', 'Ibadan']),
@@ -104,5 +96,5 @@ export const NAIJA_QUESTIONS: TriviaQuestion[] = [
   q('tech', 'medium', 'Which company acquired the Nigerian payments startup Paystack in 2020?', 'Stripe', ['PayPal', 'Visa', 'Flutterwave']),
   q('tech', 'medium', 'The Lagos tech district nicknamed "Yabacon Valley" is in which area?', 'Yaba', ['Lekki', 'Ikeja', 'Victoria Island']),
   q('tech', 'hard', 'In what year was Flutterwave founded?', '2016', ['2012', '2014', '2019']),
-  q('tech', 'medium', 'Iyinoluwa Aboyeji co-founded Flutterwave and which talent company?', 'Andela', ['Paystack', 'Kuda', 'Piggyvest'])
+  q('tech', 'medium', 'Iyinoluwa Aboyeji co-founded Flutterwave and which talent company?', 'Andela', ['Paystack', 'Kuda', 'Piggyvest']),
 ];

@@ -80,7 +80,8 @@ export default function About() {
       <section className="sec credits">
         <h2 className="sec-h small">Credits</h2>
         <ul>
-          <li>General knowledge, science, history, geography, music, film, animals and sport trivia questions come from the Open Trivia Database (opentdb.com), used under CC BY-SA 4.0.</li>
+          <li>Many general knowledge, science, history, geography, music, film, animals and sport trivia questions come from the Open Trivia Database (opentdb.com) and OpenTriviaQA (github.com/uberspot/OpenTriviaQA), both used under CC BY-SA 4.0.</li>
+          <li>Country questions are made from the mledoze/countries data (github.com/mledoze/countries), used under the Open Database License 1.0.</li>
           <li>Word lists are built from SCOWL (Spell Checker Oriented Word Lists) by Kevin Atkinson.</li>
           <li>Typefaces: Bricolage Grotesque, Inter and JetBrains Mono, all under the SIL Open Font License.</li>
         </ul>

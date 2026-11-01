@@ -12,7 +12,7 @@
     "preview": "vite preview --outDir build/client",
     "typecheck": "react-router typegen && tsc --noEmit",
     "test": "vitest run",
-    "data": "node scripts/build-data.mjs"
+    "data": "node scripts/build-data.mjs && node scripts/build-trivia.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

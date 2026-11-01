@@ -62,8 +62,10 @@ const cases: [AnyGame, Record<string, unknown>, number][] = [
 
 describe('every game finishes with legal bot moves', () => {
   for (const [game, config, count] of cases) {
-    it(`${game.id} ${JSON.stringify(config)} with ${count} players`, () => {
+    it(`${game.id} ${JSON.stringify(config)} with ${count} players`, async () => {
       for (let seed = 1; seed <= 6; seed++) {
+        // Trivia and Word Race download their questions before a match, as the app does.
+        await game.prepare?.({ ...game.defaultConfig, ...config }, new Set());
         const { result } = selfPlay(game, config, count, ['easy', 'medium', 'hard'], seed * 7919);
         expect(result.ranking.flat().sort()).toEqual(Array.from({ length: count }, (_, i) => `p${i}`).sort());
       }

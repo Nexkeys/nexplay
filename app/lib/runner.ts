@@ -44,9 +44,9 @@ export class MatchRunner {
     this.state = initial;
   }
 
-  start(config: Record<string, unknown>) {
+  start(config: Record<string, unknown>, avoid?: ReadonlySet<string>) {
     const now = this.opts.now();
-    this.state = this.game.setup(this.players, { ...this.game.defaultConfig, ...config }, { rng: this.rng, now });
+    this.state = this.game.setup(this.players, { ...this.game.defaultConfig, ...config }, { rng: this.rng, now, avoid });
     this.refreshActors(now);
     this.emit();
   }

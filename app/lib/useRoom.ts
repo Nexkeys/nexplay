@@ -1,4 +1,4 @@
-import { limitToLast, onChildAdded, onValue, query, remove, update } from 'firebase/database';
+import { limitToLast, onChildAdded, onValue, query, remove, set, update } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadGame } from '~/engine/catalog';
 import type { AnyGame, BotLevel, GameId, MatchResult } from '~/engine/types';
@@ -26,6 +26,7 @@ import {
   type RoomMeta,
   type RoomPlayer
 } from './rooms';
+import { addSeen, sharedSeen } from './seen';
 import type { Seat, StageProps } from './stage';
 
 export interface Emote {
@@ -193,6 +194,16 @@ export function useRoom(code: string) {
   const live = pub && pub.match === match ? pub : null;
   const viewJson = live ? (mine && mine.match === match && !mine.same && mine.view ? mine.view : live.view) : null;
   const view = useMemo(() => (viewJson ? JSON.parse(viewJson) : null), [viewJson]);
+
+  // Remember what this player has been shown, and tell the host before the next match so it is not repeated.
+  const seenIds = view && seated && game?.seen && game.id === meta?.game ? game.seen(view).join(' ') : '';
+  useEffect(() => {
+    if (seenIds && meta?.game) addSeen(meta.game, seenIds.split(' '));
+  }, [seenIds, meta?.game]);
+  useEffect(() => {
+    if (!uid || !seated || !game?.seen || game.id !== meta?.game || meta?.status !== 'lobby') return;
+    set(roomRef(code, `seen/${uid}`), { game: game.id, ids: sharedSeen(game.id) }).catch(() => {});
+  }, [uid, seated, game, meta?.game, meta?.status, code]);
   const result = useMemo(() => (live?.result ? (JSON.parse(live.result) as MatchResult) : null), [live?.result]);
   const lastMove = useMemo(() => (live?.lastMove ? JSON.parse(live.lastMove) : null), [live?.lastMove]);
 

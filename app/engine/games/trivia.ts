@@ -1,16 +1,46 @@
-import { NAIJA_QUESTIONS } from '../data/trivia-naija';
-import otdb from '../data/trivia-otdb.json';
 import { botPlan, hash01 } from '../timed';
 import type { GameDef, MatchResult, PlayerId, Rng } from '../types';
 
 export interface TriviaQuestion {
+  /** Stable id made from the question text. Players remember these to avoid repeats. */
+  id: string;
   pack: string;
   difficulty: 'easy' | 'medium' | 'hard';
   q: string;
   a: string;
   wrong: string[];
-  source: 'nexplay' | 'otdb';
+  source: 'nexplay' | 'otdb' | 'otqa' | 'facts';
 }
+
+// Questions ship as shards of about 250 (scripts/build-trivia.mjs), so a game downloads only a few.
+// Each row is [id, difficulty, source, question, answer, wrong, wrong, wrong].
+type Row = [string, 0 | 1 | 2, 0 | 1 | 2 | 3, string, string, string, string, string];
+const SHARD_FILES = import.meta.glob<Row[]>('../data/trivia/*.json', { import: 'default' });
+const SHARDS = Object.keys(SHARD_FILES).map((path) => {
+  const key = path.slice(path.lastIndexOf('/') + 1, -'.json'.length);
+  return { path, key, pack: key.replace(/-\d+$/, '') };
+});
+const LEVELS = ['easy', 'medium', 'hard'] as const;
+const SOURCES = ['nexplay', 'otdb', 'otqa', 'facts'] as const;
+
+/** Every question downloaded so far on this device, by `${shard}:${id}`. */
+const loaded = new Map<string, TriviaQuestion>();
+const loadedShards = new Set<string>();
+/** What `prepare` picked for the next `setup`. */
+let prepared: { pack: string; keys: string[] } = { pack: '', keys: [] };
+
+async function loadShard(shard: (typeof SHARDS)[number]) {
+  if (loadedShards.has(shard.key)) return;
+  const rows = await SHARD_FILES[shard.path]();
+  for (const [id, d, src, q, a, ...wrong] of rows) {
+    loaded.set(`${shard.key}:${id}`, { id, pack: shard.pack, difficulty: LEVELS[d], source: SOURCES[src], q, a, wrong });
+  }
+  loadedShards.add(shard.key);
+}
+
+const inPack = (pack: string, questionPack: string) => pack === 'mixed' || questionPack === pack || (pack === 'sport' && questionPack === 'football');
+const keysFor = (pack: string) => [...loaded.keys()].filter((k) => inPack(pack, loaded.get(k)!.pack));
+const validPack = (pack: unknown) => (TRIVIA_PACKS.some((p) => p.id === pack) ? (pack as string) : 'mixed');
 
 export const TRIVIA_PACKS: { id: string; label: string }[] = [
   { id: 'mixed', label: 'Mixed bag' },
@@ -29,8 +59,6 @@ export const TRIVIA_PACKS: { id: string; label: string }[] = [
   { id: 'sport', label: 'Sport' }
 ];
 
-export const ALL_QUESTIONS: TriviaQuestion[] = [...NAIJA_QUESTIONS, ...((otdb as { questions: TriviaQuestion[] }).questions ?? [])];
-
 export interface TriviaConfig extends Record<string, unknown> {
   pack: string;
   questions: number;
@@ -47,10 +75,11 @@ export interface TriviaState {
   phase: 'question' | 'reveal' | 'over';
   start: number;
   deadline: number;
-  question: { text: string; pack: string; difficulty: TriviaQuestion['difficulty']; options: string[]; source: TriviaQuestion['source'] };
+  question: { id: string; text: string; pack: string; difficulty: TriviaQuestion['difficulty']; options: string[]; source: TriviaQuestion['source'] };
   /** Hidden until the reveal. */
   correct: number;
-  queue: number[];
+  /** `${shard}:${id}` for each question in order. */
+  queue: string[];
   answers: Record<PlayerId, { choice: number; at: number; points: number; ok: boolean }>;
   streak: Record<PlayerId, number>;
   scores: Record<PlayerId, number>;
@@ -67,24 +96,51 @@ export function triviaPoints(elapsedMs: number, limitMs: number, streak: number)
   return Math.max(500, speed) + bonus;
 }
 
-function pool(pack: string): number[] {
-  const ids: number[] = [];
-  ALL_QUESTIONS.forEach((q, i) => {
-    if (pack === 'mixed' || q.pack === pack || (pack === 'sport' && q.pack === 'football')) ids.push(i);
-  });
-  return ids;
+/** How many fresh questions to have on hand, so the difficulty mix has room to work. */
+const ENOUGH = 120;
+
+/**
+ * Downloads a few random shards of the pack and keeps the questions nobody at the table has seen.
+ * Mixed games take one shard from each of several packs. Loads more only when the first ones are
+ * mostly used up, and allows repeats only once a whole pack has been seen.
+ */
+async function prepareQuestions(config: TriviaConfig, avoid: ReadonlySet<string>, state?: TriviaState) {
+  if (state) {
+    // Resuming a match: load exactly the shards its questions came from.
+    const keys = new Set(state.queue.map((k) => k.split(':')[0]));
+    await Promise.all(SHARDS.filter((s) => keys.has(s.key)).map(loadShard));
+    return;
+  }
+  const pack = validPack(config.pack);
+  let shards = SHARDS.filter((s) => inPack(pack, s.pack));
+  if (!shards.length) shards = SHARDS;
+  shards = shards.map((s) => ({ s, r: Math.random() })).sort((a, b) => a.r - b.r).map((x) => x.s);
+  if (pack === 'mixed') {
+    // One shard from each pack first, so a mixed game really is mixed.
+    const first = new Map<string, (typeof shards)[number]>();
+    for (const s of shards) if (!first.has(s.pack)) first.set(s.pack, s);
+    shards = [...first.values(), ...shards.filter((s) => first.get(s.pack) !== s)];
+  }
+  const fresh = () => keysFor(pack).filter((k) => !avoid.has(loaded.get(k)!.id));
+  const start = pack === 'mixed' ? 6 : 2;
+  await Promise.all(shards.slice(0, start).map(loadShard));
+  for (const s of shards.slice(start)) {
+    if (fresh().length >= ENOUGH) break;
+    await loadShard(s);
+  }
+  const keys = fresh();
+  prepared = { pack, keys: keys.length >= 5 ? keys : keysFor(pack) };
 }
 
 function ask(s: TriviaState, rng: Rng, now: number): TriviaState {
-  const id = s.queue[s.n - 1];
-  const item = ALL_QUESTIONS[id];
+  const item = loaded.get(s.queue[s.n - 1])!;
   const options = rng.shuffle([item.a, ...item.wrong.slice(0, 3)]);
   return {
     ...s,
     phase: 'question',
     start: now,
     deadline: now + s.seconds * 1000,
-    question: { text: item.q, pack: item.pack, difficulty: item.difficulty, options, source: item.source },
+    question: { id: item.id, text: item.q, pack: item.pack, difficulty: item.difficulty, options, source: item.source },
     correct: options.indexOf(item.a),
     answers: {}
   };
@@ -103,15 +159,22 @@ export const trivia: GameDef<TriviaState, TriviaMove, TriviaConfig> = {
   maxPlayers: 8,
   selfTimed: true,
   defaultConfig: { pack: 'mixed', questions: 10, seconds: 20 },
-  setup(players, config, { rng, now }) {
-    const pack = TRIVIA_PACKS.some((p) => p.id === config.pack) ? config.pack : 'mixed';
-    let ids = pool(pack);
-    if (ids.length < 5) ids = pool('mixed');
-    // Mixed games lean on easy and medium questions with a few hard ones.
-    const shuffled = rng.shuffle(ids);
+  prepare: prepareQuestions,
+  seen(view) {
+    const id = (view as Partial<TriviaState> | null)?.question?.id;
+    return id ? [id] : [];
+  },
+  setup(players, config, { rng, now, avoid }) {
+    const pack = validPack(config.pack);
+    if (prepared.pack !== pack || !prepared.keys.length) throw new Error('Trivia questions are not loaded yet.');
+    const fresh = prepared.keys.filter((k) => !avoid?.has(loaded.get(k)!.id));
+    // Games lean on easy and medium questions with a few hard ones.
+    const shuffled = rng.shuffle(fresh.length >= 5 ? fresh : prepared.keys);
     const total = Math.min(Math.max(5, Number(config.questions) || 10), 20, shuffled.length);
+    const hard = (k: string) => (loaded.get(k)!.difficulty === 'hard' ? 1 : 0);
     const queue = shuffled
-      .sort((a, b) => (ALL_QUESTIONS[a].difficulty === 'hard' ? 1 : 0) - (ALL_QUESTIONS[b].difficulty === 'hard' ? 1 : 0) + (rng.next() - 0.5) * 1.2)
+      .slice(0, total * 4)
+      .sort((a, b) => hard(a) - hard(b) + (rng.next() - 0.5) * 1.2)
       .slice(0, total);
     const ids2 = players.map((p) => p.id);
     const base: TriviaState = {
@@ -124,7 +187,7 @@ export const trivia: GameDef<TriviaState, TriviaMove, TriviaConfig> = {
       phase: 'question',
       start: 0,
       deadline: 0,
-      question: { text: '', pack, difficulty: 'easy', options: [], source: 'nexplay' },
+      question: { id: '', text: '', pack, difficulty: 'easy', options: [], source: 'nexplay' },
       correct: -1,
       queue,
       answers: {},
@@ -174,7 +237,9 @@ export const trivia: GameDef<TriviaState, TriviaMove, TriviaConfig> = {
     }
     return { ranking, scores: s.scores, draw: ranking[0].length > 1, summary: 'Right answers, answered fast.' } satisfies MatchResult;
   },
-  view(s, viewer) {
+  view(full, viewer) {
+    // Players have no use for the upcoming question list, and it would only grow every update.
+    const s = { ...full, queue: [] };
     if (s.phase !== 'question') return s;
     // During the question nobody sees the answer or what others picked.
     return {

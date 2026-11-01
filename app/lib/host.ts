@@ -3,6 +3,7 @@ import type { AnyGame, PlayerInfo } from '~/engine/types';
 import { serverNow } from './firebase';
 import { MatchRunner, type Snapshot } from './runner';
 import { roomRef, type RoomMeta, type RoomPlayer } from './rooms';
+import { loadSeen } from './seen';
 
 export const seatedInfos = (players: Record<string, RoomPlayer>): PlayerInfo[] =>
   Object.entries(players)
@@ -41,10 +42,30 @@ export class RoomHost {
     });
     this.setPlayers(this.players);
     const prev = saved.val() as { match: number; state: string } | null;
-    if (prev && prev.match === this.meta.match && prev.state) this.runner.resume(JSON.parse(prev.state));
-    else this.runner.start(this.meta.config);
+    const config = { ...this.game.defaultConfig, ...this.meta.config };
+    if (prev && prev.match === this.meta.match && prev.state) {
+      const state = JSON.parse(prev.state);
+      await this.game.prepare?.(config, new Set(), state);
+      if (this.stopped) return;
+      this.runner.resume(state);
+    } else {
+      const avoid = this.game.prepare ? await this.seenByTable() : new Set<string>();
+      await this.game.prepare?.(config, avoid);
+      if (this.stopped) return;
+      this.runner.start(this.meta.config, avoid);
+    }
     this.listen();
     this.timer = setInterval(() => this.runner?.step(), 200);
+  }
+
+  /** Everything anyone at the table has already been shown in this game, so nobody gets a repeat. */
+  private async seenByTable(): Promise<Set<string>> {
+    const avoid = new Set(loadSeen(this.game.id));
+    const shared = (await get(roomRef(this.code, 'seen')).catch(() => null))?.val() as Record<string, { game: string; ids: string }> | null;
+    for (const [uid, s] of Object.entries(shared ?? {})) {
+      if (this.players[uid] && s?.game === this.game.id && typeof s.ids === 'string') for (const id of s.ids.split(' ')) if (id) avoid.add(id);
+    }
+    return avoid;
   }
 
   setPlayers(players: Record<string, RoomPlayer>) {
