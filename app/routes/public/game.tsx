@@ -5,6 +5,7 @@ import { Reveal } from '~/components/fx/Reveal';
 import { GAMES, gameMeta } from '~/engine/catalog';
 import { seo } from '~/lib/seo';
 import NotFound from '../not-found';
+import { HowTo } from '~/components/game/HowTo';
 
 export function meta({ params }: { params: { id?: string } }) {
   const g = gameMeta(params.id ?? '');
@@ -69,6 +70,10 @@ export default function GamePage() {
           <GameArt id={g.id} size={360} />
         </div>
       </section>
+
+      <div className="gp-howto">
+        <HowTo meta={g} tone="light" title={`How to play ${g.name} in 3 steps`} />
+      </div>
 
       <section className="rules">
         <nav className="toc" aria-label="On this page">

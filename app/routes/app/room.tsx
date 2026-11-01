@@ -13,6 +13,7 @@ import { serverNow } from '~/lib/firebase';
 import { isCode, joinRoom, normaliseCode, type RoomMeta } from '~/lib/rooms';
 import { firstName } from '~/lib/stage';
 import { useRoom, type RoomApi } from '~/lib/useRoom';
+import { HowTo } from '~/components/game/HowTo';
 
 export function meta({ params }: { params: { code?: string } }) {
   return [{ title: `Room ${params.code ?? ''} · NexPlay` }, { name: 'robots', content: 'noindex' }];
@@ -251,6 +252,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
         </section>
 
         <section className="panel rules-panel">
+          <HowTo meta={info} />
           <div className="panel-head">
             <h2>House rules</h2>
             {!room.isHost && <span className="mono">set by the host</span>}

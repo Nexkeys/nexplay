@@ -1,0 +1,79 @@
+/* The three step "How to play" card. Dark inside the app, light on the public pages. */
+.howto {
+  min-width: 0;
+  border-radius: 18px;
+  padding: 14px 16px 16px;
+  background: color-mix(in srgb, var(--tint, var(--brass)) 14%, var(--walnut-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint, var(--brass)) 35%, transparent);
+  color: var(--cream);
+}
+.howto.light {
+  background: color-mix(in srgb, var(--tint, var(--brass)) 9%, #fffaf0);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint, var(--brass)) 28%, transparent);
+  color: var(--ink);
+}
+.howto h2 {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--tint, var(--brass)) 55%, var(--cream));
+}
+.howto.light h2 {
+  color: color-mix(in srgb, var(--tint, var(--brass)) 75%, var(--ink));
+}
+.howto ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.howto li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.howto .n {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 15px;
+  color: #fffaf0;
+  background: var(--tint, var(--brass));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--tint, var(--brass)) 60%, #000);
+}
+.howto p {
+  margin: 3px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* where it sits */
+.solo-form .howto {
+  margin: 14px 0 6px;
+}
+.rules-panel .howto {
+  margin-bottom: 18px;
+}
+.drawer .howto {
+  margin: 2px 0 20px;
+}
+.gp-howto {
+  padding: 0 clamp(16px, 4vw, 40px) clamp(28px, 4vw, 48px);
+}
+.gp-howto .howto {
+  max-width: 760px;
+  padding: 18px 20px 20px;
+}
+.gp-howto .howto p {
+  font-size: 16.5px;
+}

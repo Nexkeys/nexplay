@@ -35,6 +35,8 @@ export interface GameMeta {
   colour: string;
   isNew?: boolean;
   settings: Setting[];
+  /** Three short steps shown wherever a game is picked, so nobody starts lost. */
+  howTo?: string[];
   rules: RuleSection[];
   tips: string[];
   keywords: string[];
@@ -62,6 +64,11 @@ export const GAMES: GameMeta[] = [
         ],
         help: 'Families play Ayo differently. Pick the one you grew up with.'
       }
+    ],
+    howTo: [
+      'Pick one of your houses. Its seeds are dropped one at a time into the houses that follow.',
+      'If your last seed lands where there are already seeds, scoop them all up and keep going.',
+      'Make a house hold exactly four seeds to win it. Most houses at the end wins.'
     ],
     rules: [
       { title: 'The board', body: ['Each player owns the six houses on their side. Every house starts with four seeds, forty eight in all.'] },
@@ -115,6 +122,11 @@ export const GAMES: GameMeta[] = [
       { key: 'changeDirection', label: '2 and 5 change direction', type: 'toggle' },
       { key: 'tender', label: 'Tender when the market finishes', help: 'One reshuffle, then when the market finishes again everyone counts their cards.', type: 'toggle' }
     ],
+    howTo: [
+      'Play a card that matches the shape or the number on top of the pile.',
+      'No match? Go to market and take a card. Special cards like Pick two and Hold on change the game.',
+      'Say last card when you have one left. Empty your hand first to win.'
+    ],
     rules: [
       { title: 'The deck', body: ['54 cards in five shapes: circles, triangles, crosses, squares and stars, numbered 1 to 14 with some numbers missing, plus five Whot cards numbered 20.'] },
       {
@@ -164,6 +176,11 @@ export const GAMES: GameMeta[] = [
         ]
       }
     ],
+    howTo: [
+      'Take turns dropping a disc into any column.',
+      'It falls to the lowest empty space in that column.',
+      'Get four of your discs in a row, across, down or diagonally, to win.'
+    ],
     rules: [
       { title: 'Classic', body: ['Take turns dropping a disc into a column. It falls to the lowest free space. Four in a row across, down or diagonally wins. A full board is a draw.'] },
       { title: 'Pop Out', body: ['On your turn you can drop a disc, or pull one of your own discs out from the bottom row so the column slides down. If a pop makes four for both players, the player who popped wins.'] },
@@ -192,6 +209,11 @@ export const GAMES: GameMeta[] = [
           { value: 'vanishing', label: 'Vanishing' }
         ]
       }
+    ],
+    howTo: [
+      'Take turns putting your mark in an empty square.',
+      'Get three in a row, across, down or diagonally, to win.',
+      'Want a twist? Try Ultimate or Vanishing in the house rules.'
     ],
     rules: [
       { title: 'Classic', body: ['Three in a row across, down or diagonally wins. A full board is a draw.'] },
@@ -230,6 +252,11 @@ export const GAMES: GameMeta[] = [
       { key: 'bestOf', label: 'Best of', type: 'choice', options: [1, 3, 5, 7].map((n) => ({ value: n, label: String(n) })) },
       { key: 'seconds', label: 'Seconds to pick', type: 'choice', options: [5, 8, 12].map((n) => ({ value: n, label: `${n}s` })) }
     ],
+    howTo: [
+      'Pick rock, paper or scissors before the timer runs out.',
+      'Rock beats scissors, scissors beats paper, paper beats rock.',
+      'Win the most rounds to win the match.'
+    ],
     rules: [
       { title: 'How it works', body: ['Both players pick at the same time. Rock crushes scissors, scissors cut paper, paper covers rock.', 'Picks are sealed with a fingerprint first and revealed together, so nobody can wait and counter.'] },
       { title: 'Lizard Spock', body: ['Scissors cut paper, paper covers rock, rock crushes lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitate lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and rock crushes scissors.'] },
@@ -259,6 +286,11 @@ export const GAMES: GameMeta[] = [
       },
       { key: 'rounds', label: 'Rounds', type: 'choice', options: [5, 8, 12].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'unscramble' } },
       { key: 'seconds', label: 'Seconds', type: 'choice', options: [60, 90, 120].map((n) => ({ value: n, label: `${n}s` })), when: { key: 'mode', value: 'hunt' } }
+    ],
+    howTo: [
+      'Unscramble: rearrange the letters into a real word and type it in.',
+      'Solve it first for the most points. Faster always scores more.',
+      'Word Hunt: find as many words as you can in seven letters. Longer words score more.'
     ],
     rules: [
       { title: 'Unscramble', body: ['Everyone sees the same scrambled word. Use every letter. The first solver scores most, later solvers score less, and faster is always better. Once someone solves it, the others have eight seconds left.'] },
@@ -300,6 +332,11 @@ export const GAMES: GameMeta[] = [
       { key: 'questions', label: 'Questions', type: 'choice', options: [10, 15, 20].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'sprint' } },
       { key: 'puzzles', label: 'Puzzles', type: 'choice', options: [3, 5, 8].map((n) => ({ value: n, label: String(n) })), when: { key: 'mode', value: 'make24' } }
     ],
+    howTo: [
+      'Everyone gets the same sum at the same time.',
+      'Type your answer and tap Go. Right and fast scores the most.',
+      'Make 24: use all four numbers once with + − × ÷ to make 24.'
+    ],
     rules: [
       { title: 'Sprint', body: ['Everyone gets the same sum at the same time and one try to answer. Correct answers score 100 plus up to 100 for speed. Answer several in a row for a streak multiplier of up to ×1.5.'] },
       { title: 'Make 24', body: ['Use all four numbers exactly once with + − × ÷ and brackets to make 24. Every puzzle has at least one answer. The first solver scores most, and you can keep trying until time runs out. Once someone solves it, everyone else has 15 seconds left.'] }
@@ -320,6 +357,11 @@ export const GAMES: GameMeta[] = [
       { key: 'pack', label: 'Pack', type: 'choice', options: [{ value: 'mixed', label: 'Mixed bag' }, { value: 'naija', label: 'Naija' }, { value: 'afrobeats', label: 'Afrobeats' }, { value: 'football', label: 'Football' }, { value: 'nollywood', label: 'Nollywood' }, { value: 'general', label: 'General knowledge' }, { value: 'science', label: 'Science' }, { value: 'tech', label: 'Tech' }, { value: 'geography', label: 'Geography' }, { value: 'history', label: 'History' }, { value: 'music', label: 'Music' }, { value: 'film', label: 'Film' }, { value: 'animals', label: 'Animals' }, { value: 'sport', label: 'Sport' }] },
       { key: 'questions', label: 'Questions', type: 'choice', options: [5, 10, 15].map((n) => ({ value: n, label: String(n) })) },
       { key: 'seconds', label: 'Seconds per question', type: 'choice', options: [15, 20, 30].map((n) => ({ value: n, label: `${n}s` })) }
+    ],
+    howTo: [
+      'Everyone sees the same question with four answers.',
+      'Tap the answer you think is right before time runs out.',
+      'Right and fast scores the most. Get a few right in a row for a bonus.'
     ],
     rules: [
       { title: 'How it works', body: ['Everyone sees the same question with four answers. Pick one before the timer runs out.'] },

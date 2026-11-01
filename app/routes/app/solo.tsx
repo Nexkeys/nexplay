@@ -10,6 +10,7 @@ import type { BotLevel, GameId } from '~/engine/types';
 import { useIdentity } from '~/lib/identity';
 import { useLocalMatch, type LocalSetup } from '~/lib/useLocalMatch';
 import { Problem } from './room';
+import { HowTo } from '~/components/game/HowTo';
 
 export function meta() {
   return [{ title: 'Vs computer · NexPlay' }, { name: 'robots', content: 'noindex' }];
@@ -87,6 +88,8 @@ export default function Solo() {
           <span className="mono">Vs computer</span>
           <h1>{info.name}</h1>
           <p className="muted">Practise against the computer. Wins here earn a little XP too.</p>
+
+          <HowTo meta={info} />
 
           <h2>How good?</h2>
           <div className="levels" role="radiogroup" aria-label="Computer level">

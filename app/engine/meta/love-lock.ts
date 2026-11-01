@@ -36,6 +36,11 @@ export const LOVE_LOCK: GameMeta = {
       help: 'Locks get harder as you go. Skip ahead if you are old hands.'
     }
   ],
+  howTo: [
+    'You and your partner each hold different clues to the same secret code.',
+    'On your turn, share one of your clues or try a code. A wrong try costs a heart.',
+    'Work it out together and open every lock before your hearts run out.'
+  ],
   rules: [
     {
       title: 'Two halves of one code',

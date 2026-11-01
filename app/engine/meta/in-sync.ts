@@ -33,6 +33,11 @@ export const IN_SYNC: GameMeta = {
       help: 'Read My Mind and Scale rounds get five seconds more.'
     }
   ],
+  howTo: [
+    'You and your partner see the same question.',
+    'Each of you answers in secret. Some rounds ask you to guess what your partner picked.',
+    'Every match raises your sync score. Aim for 100% together.'
+  ],
   rules: [
     {
       title: 'How it works',

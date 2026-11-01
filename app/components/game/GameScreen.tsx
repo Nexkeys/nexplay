@@ -11,6 +11,7 @@ import { outcomeFor, recordMatch } from '~/lib/stats';
 import { Avatar } from '../Avatar';
 import { Icon } from '../Icon';
 import { BOARDS } from '../boards';
+import { HowTo } from './HowTo';
 
 export const EMOTES = ['😂', '🔥', '👏', '😤', '👀', '🙏', '😭', '🤝'];
 
@@ -249,6 +250,7 @@ export function GameScreen({
                   <Icon name="close" />
                 </button>
               </div>
+              <HowTo meta={meta} title="In short" />
               {meta.rules.map((r) => (
                 <section key={r.title}>
                   <h4>{r.title}</h4>

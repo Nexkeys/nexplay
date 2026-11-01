@@ -21,6 +21,11 @@ export const LUDO: GameMeta = {
       type: 'toggle'
     }
   ],
+  howTo: [
+    'Tap the dice to roll. You need a six to bring a seed out of your base.',
+    'Tap a glowing seed to move it. Land on a rival\'s seed to send it back to base.',
+    'Get all four of your seeds round the board and home first to win.'
+  ],
   rules: [
     {
       title: 'The board',
