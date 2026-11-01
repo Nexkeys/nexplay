@@ -37,6 +37,28 @@ export const INVITE_TTL = 15 * 60_000;
 export const IDLE_TTL = 5 * 60_000;
 /** How often the host tells the database the room is still in use. */
 export const HEARTBEAT_MS = 20_000;
+/** The database rules allow one new room per player this often, and one reaction a second. */
+export const ROOM_GAP_MS = 3_000;
+export const EMOTE_GAP_MS = 1_000;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+let lastRoomAt = 0;
+
+/**
+ * Records which code this player is about to create. The rules only let a room be created with the
+ * code claimed here, and a claim only every few seconds. Waits out the gap instead of failing.
+ */
+async function claimRoomCode(uid: string, code: string) {
+  const wait = lastRoomAt + ROOM_GAP_MS + 250 - serverNow();
+  if (wait > 0) await sleep(wait);
+  const claim = () => set(ref(db(), `limits/${uid}`), { room: code, at: serverTimestamp() });
+  // After a reload we do not know when the last room was made, so one refusal means wait and retry.
+  await claim().catch(async () => {
+    await sleep(ROOM_GAP_MS);
+    await claim();
+  });
+  lastRoomAt = serverNow();
+}
 
 export interface RoomMeta {
   code: string;
@@ -95,6 +117,7 @@ export async function createRoom(opts: {
   const meta = gameMeta(opts.game)!;
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = randomCode();
+    await claimRoomCode(opts.uid, code);
     // A transaction on the code makes sure two rooms can never share one.
     const result = await runTransaction(roomRef(code, 'meta'), (current) => {
       if (current) return; // taken, abort
@@ -222,7 +245,16 @@ export async function addBot(code: string, players: Record<string, RoomPlayer>, 
 export const sendMove = (code: string, uid: string, match: number, move: unknown) =>
   push(roomRef(code, 'moves'), { uid, match, move: JSON.stringify(move), t: serverTimestamp() });
 
-export const sendEmote = (code: string, uid: string, e: string) => push(roomRef(code, 'emotes'), { uid, e, t: serverTimestamp() });
+let lastEmoteAt = 0;
+
+/** Sends a reaction, at most one a second. Taps in between are ignored rather than queued. */
+export function sendEmote(code: string, uid: string, e: string) {
+  const now = serverNow();
+  if (now - lastEmoteAt < EMOTE_GAP_MS + 200) return Promise.resolve();
+  lastEmoteAt = now;
+  const key = push(roomRef(code, 'emotes')).key!;
+  return update(roomRef(code), { [`emotes/${key}`]: { uid, e, t: serverTimestamp() }, [`emoteAt/${uid}`]: serverTimestamp() }).catch(() => {});
+}
 
 /** Takes over as host when the current host has gone quiet. Only succeeds for one player. */
 export async function claimHost(code: string, uid: string, previousHost: string) {

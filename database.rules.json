@@ -5,7 +5,7 @@
         ".write": "auth != null && !newData.exists() && (data.child('meta/hostUid').val() === auth.uid || data.child('meta/expiresAt').val() < now)",
         "meta": {
           ".read": "auth != null",
-          ".write": "auth != null && (!data.exists() || data.child('hostUid').val() === auth.uid)",
+          ".write": "auth != null && (data.exists() ? data.child('hostUid').val() === auth.uid : root.child('limits/' + auth.uid + '/room').val() === $code)",
           ".validate": "!newData.exists() || newData.hasChildren(['code', 'game', 'hostUid', 'status'])",
           "hostUid": {
             ".write": "auth != null && root.child('rooms/' + $code + '/players/' + auth.uid).exists() && (newData.val() === auth.uid || data.val() === auth.uid)"
@@ -51,10 +51,16 @@
         },
         "emotes": {
           ".read": "auth != null",
-          ".write": "auth != null && root.child('rooms/' + $code + '/meta/hostUid').val() === auth.uid",
+          ".write": "auth != null && !newData.exists() && root.child('rooms/' + $code + '/meta/hostUid').val() === auth.uid",
           "$e": {
-            ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && root.child('rooms/' + $code + '/players/' + auth.uid).exists()",
+            ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && root.child('rooms/' + $code + '/players/' + auth.uid).exists() && newData.parent().parent().child('emoteAt/' + auth.uid).val() === now",
             ".validate": "newData.child('e').isString() && newData.child('e').val().length <= 8"
+          }
+        },
+        "emoteAt": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.val() === now && (!data.exists() || data.val() <= now - 1000)"
           }
         }
       }
@@ -71,6 +77,12 @@
       "$game": {
         ".read": "auth != null",
         ".write": "auth != null"
+      }
+    },
+    "limits": {
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.child('room').isString() && newData.child('at').val() === now && (!data.child('at').exists() || data.child('at').val() <= now - 3000)"
       }
     },
     "matches": {

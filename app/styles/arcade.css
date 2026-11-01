@@ -336,6 +336,8 @@
 }
 .join input {
   width: 128px;
+  /* inputs won't shrink below their default size without this, which pushed Join out of the card */
+  min-width: 0;
   background: none;
   border: 0;
   outline: 0;
@@ -344,6 +346,9 @@
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--cream);
+}
+.join .btn {
+  flex-shrink: 0;
 }
 .join input::placeholder {
   color: #6f9583;
@@ -1619,6 +1624,8 @@
   }
   .hero-actions {
     flex-direction: column;
+    /* a wrapping column sizes to its content's natural width, not the card's, and Join was cut off */
+    flex-wrap: nowrap;
     align-items: stretch;
   }
   .join input {
