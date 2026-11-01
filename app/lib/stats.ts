@@ -27,6 +27,8 @@ export const levelProgress = (xp: number) => {
 };
 
 export function outcomeFor(result: MatchResult, me: string): Outcome {
+  // Partners never lose to each other: a co-op game that falls short counts as a draw.
+  if (result.coop) return result.coop.won ? 'win' : 'draw';
   if (result.draw) return 'draw';
   return result.ranking[0]?.includes(me) ? (result.ranking[0].length > 1 ? 'draw' : 'win') : 'loss';
 }

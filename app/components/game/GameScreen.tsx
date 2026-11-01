@@ -192,7 +192,17 @@ export function GameScreen({
             <motion.section className={`results ${outcome ?? 'watch'}`} initial={{ y: 60, scale: 0.94 }} animate={{ y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }}>
               {outcome === 'win' && <Confetti />}
               <span className="mono">{meta.name} · game over</span>
-              <h2>{outcome === 'win' ? 'You won!' : outcome === 'draw' ? "It's a draw" : outcome === 'loss' ? 'Good game' : `${firstName(seatOf(stage.seats, result.ranking[0]?.[0])?.name ?? '')} won`}</h2>
+              <h2>
+                {result.coop
+                  ? result.summary
+                  : outcome === 'win'
+                    ? 'You won!'
+                    : outcome === 'draw'
+                      ? "It's a draw"
+                      : outcome === 'loss'
+                        ? 'Good game'
+                        : `${firstName(seatOf(stage.seats, result.ranking[0]?.[0])?.name ?? '')} won`}
+              </h2>
               <p className="sum">{result.summary}</p>
               <ol className="ranking">
                 {result.ranking.flatMap((group, place) =>

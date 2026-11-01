@@ -41,6 +41,8 @@ export interface MatchResult {
   scores: Record<PlayerId, number>;
   draw: boolean;
   summary: string;
+  /** Co-op games: everyone plays together and shares one outcome, a win when `won`. */
+  coop?: { won: boolean };
 }
 
 /**

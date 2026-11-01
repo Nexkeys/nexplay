@@ -433,7 +433,8 @@ export const inSync: GameDef<InSyncState, InSyncMove, InSyncConfig> = {
       ranking: [[...s.players]],
       scores: Object.fromEntries(s.players.map((p) => [p, pct])),
       draw: false,
-      summary: `${pct}% in sync. ${syncTitle(pct).title}!`
+      summary: `${pct}% in sync. ${syncTitle(pct).title}!`,
+      coop: { won: true }
     } satisfies MatchResult;
   },
   view(full, viewer) {
