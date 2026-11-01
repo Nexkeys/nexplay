@@ -681,7 +681,12 @@
     padding: 6px 10px;
   }
   .ll-hearts {
-    max-width: 92px;
+    max-width: 96px;
+  }
+  /* five hearts on one line; seven wrap five and two */
+  .ll-hearts .ll-heart {
+    width: 17px;
+    height: 17px;
   }
   .ll-together b {
     font-size: 30px;
