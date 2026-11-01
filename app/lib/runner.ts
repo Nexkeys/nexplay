@@ -115,6 +115,8 @@ export class MatchRunner {
   }
 
   private botDelay(level: string) {
+    // Ludo's dice roll and seed hops take longer to play out than a disc drop or a card.
+    if (this.game.id === 'ludo') return 1600;
     return level === 'hard' ? 650 : level === 'medium' ? 900 : 1150;
   }
 

@@ -102,8 +102,6 @@ function Quarter({ c, inPlay, locked }: { c: number; inPlay: boolean; locked: bo
       <path d="M1.2 6.5 h.56 M1.52 6.28 l.24 .22 -.24 .22" fill="none" stroke="#fffaf0" strokeWidth=".1" strokeLinejoin="round" strokeLinecap="round" />
       {/* arrow into the home column */}
       <path d="M.2 7.5 h.56 M.52 7.28 l.24 .22 -.24 .22" fill="none" stroke={col} strokeWidth=".1" strokeLinecap="round" strokeLinejoin="round" />
-      {/* star safe square (on the next arm, so every arm gets one) */}
-      <polygon points={STAR(6.5, 2.5, 0.36)} fill="#c9b897" stroke="#a38d64" strokeWidth=".04" strokeLinejoin="round" />
       {/* centre triangle */}
       <polygon points="6,6 6,9 7.5,7.5" fill={`url(#ludo-tri-${c})`} />
       {locked && (
@@ -158,6 +156,11 @@ const BoardArt = memo(function BoardArt({ q, turn, inPlay, locked }: { q: number
       <g transform={`rotate(${q * 90} 7.5 7.5)`}>
         {[0, 1, 2, 3].map((c) => (
           <Quarter key={c} c={c} inPlay={inPlay.includes(String(c))} locked={locked.includes(String(c))} />
+        ))}
+        {/* star safe squares, 8 squares past each start. Drawn after every quarter, because each
+            star sits on the next colour's arm and would be painted over by its cells. */}
+        {[0, 1, 2, 3].map((c) => (
+          <polygon key={c} transform={`rotate(${c * 90} 7.5 7.5)`} points={STAR(6.5, 2.5, 0.36)} fill="#c9b897" stroke="#a38d64" strokeWidth=".04" strokeLinejoin="round" />
         ))}
       </g>
       {/* centre medallion and the active player's glow */}

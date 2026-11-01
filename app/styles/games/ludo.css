@@ -360,6 +360,10 @@
   .ludo-dots svg {
     width: 30px;
   }
+  /* The bottom row shares its width with the dice: keep the "2/4" count, drop the dots. */
+  .ludo-row.bottom .ludo-dots svg {
+    display: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .ludo-seed.can .hop,
