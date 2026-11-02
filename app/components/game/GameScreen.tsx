@@ -12,6 +12,7 @@ import { Avatar } from '../Avatar';
 import { Icon } from '../Icon';
 import { BOARDS } from '../boards';
 import { HowTo } from './HowTo';
+import { ScrollLock } from '~/lib/scrollLock';
 
 export const EMOTES = ['😂', '🔥', '👏', '😤', '👀', '🙏', '😭', '🤝'];
 
@@ -106,7 +107,7 @@ export function GameScreen({
         <div className="gtools">
           {onEmote && me && (
             <button className={`gbtn${emoteOpen ? ' on' : ''}`} onClick={() => setEmoteOpen(!emoteOpen)} aria-label="Reactions" aria-expanded={emoteOpen}>
-              <span aria-hidden="true">😀</span>
+              <Icon name="smile" />
             </button>
           )}
           <button className="gbtn" onClick={() => setRules(true)} aria-label="Rules">
@@ -190,6 +191,7 @@ export function GameScreen({
       <AnimatePresence>
         {showResult && result && stage && (
           <motion.div className="results-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScrollLock />
             <motion.section className={`results ${outcome ?? 'watch'}`} initial={{ y: 60, scale: 0.94 }} animate={{ y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }}>
               {outcome === 'win' && <Confetti />}
               <span className="mono">{meta.name} · game over</span>
@@ -243,6 +245,7 @@ export function GameScreen({
       <AnimatePresence>
         {rules && (
           <motion.div className="drawer-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRules(false)}>
+            <ScrollLock />
             <motion.aside className="drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 320, damping: 34 }} onClick={(e) => e.stopPropagation()}>
               <div className="drawer-head">
                 <h3>How to play {meta.name}</h3>

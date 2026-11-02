@@ -24,7 +24,8 @@ const PATHS = {
   logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10',
   google: '',
   backspace: 'M9 5h11v14H9l-6-7zM12 9l6 6M18 9l-6 6',
-  refresh: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5'
+  refresh: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5',
+  smile: 'M12 3a9 9 0 100 18 9 9 0 000-18zM8.5 14.5a4.5 4.5 0 007 0M9 9.5h.01M15 9.5h.01'
 } as const;
 
 export type IconName = keyof typeof PATHS;

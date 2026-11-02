@@ -6,8 +6,8 @@ import type { StageProps } from '~/lib/stage';
 import { firstName, seatOf } from '~/lib/stage';
 import { Avatar } from '../Avatar';
 import { Countdown, TimeBar, useChange } from '../game/common';
+import { Hand as HandArt } from '../art/RpsHands';
 
-const GLYPH: Record<Choice, string> = { rock: '✊', paper: '✋', scissors: '✌️', lizard: '🦎', spock: '🖖' };
 const LABEL: Record<Choice, string> = { rock: 'Rock', paper: 'Paper', scissors: 'Scissors', lizard: 'Lizard', spock: 'Spock' };
 
 type View = Omit<RpsState, 'commits'> & { commits: boolean[] };
@@ -71,11 +71,11 @@ export default function RpsBoard({ view, me, seats, send, now, result }: StagePr
       <AnimatePresence mode="wait">
         {pick && showing ? (
           <motion.span key={pick} className="glyph" initial={{ scale: 0.3, rotate: side === 'l' ? -30 : 30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 16 }}>
-            {GLYPH[pick]}
+            <HandArt choice={pick} />
           </motion.span>
         ) : (
           <motion.span key="fist" className="glyph shaking" animate={waiting ? { y: [0, -18, 0] } : { y: 0 }} transition={waiting ? { repeat: Infinity, duration: 0.55 } : {}}>
-            ✊
+            <HandArt choice="rock" />
           </motion.span>
         )}
       </AnimatePresence>
@@ -132,7 +132,9 @@ export default function RpsBoard({ view, me, seats, send, now, result }: StagePr
             <motion.div key="pick" className={`rps-picks n${options.length}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               {options.map((c) => (
                 <button key={c} onClick={() => choose(c)}>
-                  <span>{GLYPH[c]}</span>
+                  <span>
+                    <HandArt choice={c} />
+                  </span>
                   <b>{LABEL[c]}</b>
                 </button>
               ))}
@@ -151,8 +153,12 @@ export default function RpsBoard({ view, me, seats, send, now, result }: StagePr
           <ol className="rps-history" aria-label="Previous rounds">
             {s.history.map((h, i) => (
               <li key={i} className={h.winner === null ? 'tie' : h.winner === left ? 'l' : 'r'}>
-                <span>{h.picks[left] ? GLYPH[h.picks[left]!] : '⌛'}</span>
-                <span>{h.picks[1 - left] ? GLYPH[h.picks[1 - left]!] : '⌛'}</span>
+                <span>
+                  <HandArt choice={h.picks[left]} label={h.picks[left] ? LABEL[h.picks[left]!] : 'No pick'} />
+                </span>
+                <span>
+                  <HandArt choice={h.picks[1 - left]} label={h.picks[1 - left] ? LABEL[h.picks[1 - left]!] : 'No pick'} />
+                </span>
               </li>
             ))}
           </ol>

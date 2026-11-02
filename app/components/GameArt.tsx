@@ -1,5 +1,6 @@
 import type { GameId } from '~/engine/types';
 import { ArenaArt } from './art/ArenaArt';
+import { HandInSvg } from './art/RpsHands';
 import { InSyncArt } from './art/InSyncArt';
 import { LoveLockArt } from './art/LoveLockArt';
 import { LudoArt } from './art/LudoArt';
@@ -87,12 +88,8 @@ export function GameArt({ id, size = 150 }: { id: GameId; size?: number }) {
         <svg width={w * 0.9} height={w * 0.6} viewBox="0 0 150 100" aria-hidden="true">
           <circle cx="45" cy="52" r="34" fill="#7d4fb3" />
           <circle cx="105" cy="52" r="34" fill="#ff5a3c" />
-          <text x="45" y="64" textAnchor="middle" fontSize="34">
-            ✊
-          </text>
-          <text x="105" y="64" textAnchor="middle" fontSize="34">
-            ✌️
-          </text>
+          <HandInSvg choice="rock" x={21} y={28} size={48} rotate={90} />
+          <HandInSvg choice="scissors" x={81} y={28} size={48} rotate={-90} />
         </svg>
       );
     case 'word-race':
