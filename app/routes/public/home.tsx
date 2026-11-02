@@ -12,6 +12,8 @@ import { Split } from '~/components/fx/Split';
 import { GAMES } from '~/engine/catalog';
 import { SITE, seo } from '~/lib/seo';
 
+const CLASSICS = ['no', 'one', 'two', 'three', 'four', 'five'];
+
 export function meta() {
   return seo({
     title: 'NexPlay · Play Whot, Ayo and party games online with friends',
@@ -137,12 +139,12 @@ export default function Home() {
               <Link to={`/games/${g.id}`} className="gcard-p">
                 <span className="art" style={{ ['--tint' as string]: g.colour }}>
                   <GameArt id={g.id} size={160} />
+                  {g.isNew && <span className="badge-new">New</span>}
                 </span>
                 <span className="b">
                   <h3>{g.name}</h3>
                   <p>{g.tagline}</p>
                   <span className="tags">
-                    {g.isNew && <span className="tag new">New</span>}
                     <span className="tag">{g.players[0] === g.players[1] ? `${g.players[0]} players` : `${Math.max(2, g.players[0])} to ${g.players[1]} players`}</span>
                     <span className="tag">{g.minutes} min</span>
                   </span>
@@ -191,7 +193,7 @@ export default function Home() {
             <b>
               <CountUp to={GAMES.length} />
             </b>
-            <span>games, two of them Nigerian classics</span>
+            <span>games, {CLASSICS[GAMES.filter((g) => g.family === 'classic').length] ?? 'some'} of them Nigerian classics</span>
           </div>
           <div className="stat">
             <b>
@@ -201,9 +203,9 @@ export default function Home() {
           </div>
           <div className="stat">
             <b>
-              <CountUp to={1000} suffix="+" />
+              <CountUp to={20} suffix="k+" />
             </b>
-            <span>trivia questions across 14 packs</span>
+            <span>trivia questions across 13 packs, never repeated</span>
           </div>
           <div className="stat">
             <b>

@@ -52,7 +52,6 @@ export const GAMES: GameMeta[] = [
     minutes: '10 to 15',
     family: 'classic',
     colour: '#7a4a26',
-    isNew: true,
     settings: [
       {
         key: 'rules',
@@ -108,7 +107,6 @@ export const GAMES: GameMeta[] = [
     minutes: '8 to 15',
     family: 'classic',
     colour: '#8e1b2b',
-    isNew: true,
     settings: [
       { key: 'handSize', label: 'Cards per hand', type: 'choice', options: [4, 5, 6, 7].map((n) => ({ value: n, label: String(n) })) },
       { key: 'defendPicks', label: 'Defend pick two and pick three', help: 'Block a 2 with a 2, a 5 with a 5. The pick stacks up.', type: 'toggle' },

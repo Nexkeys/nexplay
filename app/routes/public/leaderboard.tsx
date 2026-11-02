@@ -90,22 +90,41 @@ export default function Leaderboard() {
           </div>
           <div className="table" role="table" aria-label="Leaderboard">
             <div className="tr head" role="row">
-              <span>#</span>
-              <span>Player</span>
-              <span>Level</span>
-              <span className="hide-sm">Wins</span>
-              <span>XP</span>
+              <span role="columnheader">#</span>
+              <span role="columnheader">Player</span>
+              <span role="columnheader" className="lv">
+                Level
+              </span>
+              <span role="columnheader" className="wins">
+                Wins
+              </span>
+              <span role="columnheader" className="xp">
+                XP
+              </span>
             </div>
             {rows.map((r, i) => (
-              <div key={r.uid} className="tr" role="row">
-                <span className="n">{i + 1}</span>
-                <span className="who">
-                  <i style={{ background: r.avatar ?? '#e3a63a' }} />
-                  {r.name}
+              <div key={r.uid} className={`tr${i < 3 ? ` top top-${i + 1}` : ''}`} role="row">
+                <span className="n" role="cell">
+                  {i + 1}
                 </span>
-                <span>{r.level ?? 1}</span>
-                <span className="hide-sm">{r.wins ?? 0}</span>
-                <span className="xp">{r.xp.toLocaleString()}</span>
+                <span className="who" role="cell">
+                  <i style={{ background: r.avatar ?? '#e3a63a' }} aria-hidden="true">
+                    {r.name[0]?.toUpperCase()}
+                  </i>
+                  <span className="nm">
+                    <span className="name">{r.name}</span>
+                    <small className="sub">Level {r.level ?? 1}</small>
+                  </span>
+                </span>
+                <span className="lv" role="cell">
+                  {r.level ?? 1}
+                </span>
+                <span className="wins" role="cell">
+                  {r.wins ?? 0}
+                </span>
+                <span className="xp" role="cell">
+                  {r.xp.toLocaleString()}
+                </span>
               </div>
             ))}
           </div>

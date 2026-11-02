@@ -491,6 +491,22 @@
 }
 .gcard-p .art {
   height: 200px;
+  position: relative;
+}
+/* "New" sits on the corner of the picture, so every card's tags stay on one even line */
+.badge-new {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--p-coral);
+  color: #fff;
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.35);
 }
 .gcard-p .art svg {
   transition: transform 0.45s var(--ease);
@@ -1073,14 +1089,18 @@
 }
 
 /* leaderboard */
+/* minmax(0, ...) everywhere: a long name must never widen its column and push the rest off screen */
 .podium {
   display: grid;
-  grid-template-columns: 1fr 1.15fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
   gap: 18px;
   align-items: end;
+  /* left aligned with the page title, just not stretched across a wide screen */
+  max-width: calc(940px + 2 * clamp(16px, 4vw, 40px));
   padding: 10px clamp(16px, 4vw, 40px) 0;
 }
 .pod {
+  min-width: 0;
   border-radius: 30px;
   padding: 26px 16px;
   text-align: center;
@@ -1123,10 +1143,14 @@
   font-family: var(--display);
   font-size: clamp(18px, 2.2vw, 26px);
   font-weight: 800;
-  display: block;
+  line-height: 1.1;
+  /* up to two lines, breaking even one long word, then … */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 4px;
 }
 .pod .lvl {
   display: block;
@@ -1145,19 +1169,36 @@
   margin-top: 10px;
 }
 .table {
+  max-width: 940px;
   margin: 28px clamp(16px, 4vw, 40px) 0;
   border-radius: 24px;
   background: #fff;
   box-shadow: inset 0 0 0 1px var(--ink-line);
   overflow: hidden;
 }
+/* rank | player (takes the rest) | level | wins | XP */
 .tr {
   display: grid;
-  grid-template-columns: 60px 1.6fr 1fr 1fr 1fr;
+  grid-template-columns: 56px minmax(0, 1fr) 80px 80px 110px;
+  gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid var(--ink-line);
   align-items: center;
   font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.tr .lv,
+.tr .wins {
+  text-align: center;
+}
+.tr .xp {
+  text-align: right;
+}
+.tr.top .n {
+  color: var(--p-brass);
+}
+.tr.top-1 {
+  background: color-mix(in srgb, var(--p-brass) 10%, #fff);
 }
 .tr.head {
   border-top: 0;
@@ -1178,15 +1219,41 @@
   gap: 12px;
   font-weight: 600;
   min-width: 0;
+}
+.tr .who .nm {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tr .who .name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* the level under the name, used on phones in place of the level column */
+.tr .who .sub {
+  display: none;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 1px;
 }
 .tr .who i {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   flex: none;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
 }
 .tr .xp {
   font-family: var(--display);
@@ -1681,9 +1748,14 @@
     aspect-ratio: 1.5;
     order: -1;
   }
+  /* rank | player | level | XP; wins drop out to give the name room */
   .tr {
-    grid-template-columns: 44px 1.6fr 0.8fr 1fr;
-    padding: 14px 16px;
+    grid-template-columns: 36px minmax(0, 1fr) 48px 72px;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .tr .wins {
+    display: none;
   }
 }
 @media (max-width: 600px) {
@@ -1753,11 +1825,66 @@
     gap: 8px;
   }
   .pod {
-    border-radius: 22px;
-    padding: 18px 8px;
+    border-radius: 20px;
+    padding: 30px 6px 14px;
   }
   .pod.first {
-    padding: 26px 8px;
+    padding: 38px 6px 18px;
+  }
+  .medal {
+    top: 8px;
+    left: 0;
+    right: 0;
+    font-size: 18px;
+  }
+  .av-p {
+    width: 44px;
+    margin-bottom: 8px;
+    font-size: 19px;
+  }
+  .pod.first .av-p {
+    width: 52px;
+  }
+  .pod b {
+    font-size: 15px;
+  }
+  .pod .lvl {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .pod .pts {
+    font-size: 24px;
+    margin-top: 6px;
+  }
+  .pod.first .pts {
+    font-size: 28px;
+  }
+  .table {
+    margin-top: 20px;
+    border-radius: 20px;
+  }
+  /* rank | player with the level under the name | XP */
+  .tr {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    padding: 11px 14px;
+    font-size: 15px;
+  }
+  .tr .lv {
+    display: none;
+  }
+  .tr .who .sub {
+    display: block;
+  }
+  .tr .n {
+    font-size: 17px;
+  }
+  .tr .who {
+    gap: 9px;
+  }
+  .tr .who i {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
   }
   .chapter,
   .chapter.has-visual {
@@ -1777,13 +1904,14 @@
     font-size: 44px;
   }
   .pfoot-cols {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
+  /* same columns and gap as the NexPlay and Legal lists below, so the two rows line up */
   .pfoot-cols > div:first-child {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 24px;
   }
   .pfoot-cols > div:first-child h4 {
     grid-column: 1 / -1;
@@ -1793,5 +1921,22 @@
   }
   .maker .pbtn {
     width: 100%;
+  }
+}
+
+/* Game rules page on phones: players, minutes and computer levels as three even columns. */
+@media (max-width: 600px) {
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .facts b {
+    font-size: 22px;
+    white-space: nowrap;
+  }
+  .facts span {
+    font-size: 12px;
+    line-height: 1.3;
   }
 }
