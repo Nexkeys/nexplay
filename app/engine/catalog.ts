@@ -36,7 +36,7 @@ export interface GameMeta {
   isNew?: boolean;
   settings: Setting[];
   /** Three short steps shown wherever a game is picked, so nobody starts lost. */
-  howTo?: string[];
+  howTo: string[];
   rules: RuleSection[];
   tips: string[];
   keywords: string[];

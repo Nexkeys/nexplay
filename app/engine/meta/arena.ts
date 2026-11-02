@@ -24,6 +24,11 @@ export const ARENA: GameMeta = {
     },
     { key: 'seconds', label: 'Seconds to pick a move', type: 'choice', options: [6, 10, 15, 20].map((n) => ({ value: n, label: `${n}s` })) }
   ],
+  howTo: [
+    'Pick a fighter: Warrior, Mage, Rogue or Cleric. Each has its own special move.',
+    'Every round, everyone secretly picks Strike, Block, Charge or Special at the same time. Tap a rival first to aim at them.',
+    'Charge to build energy for your special, block the big hits, and be the last fighter standing.'
+  ],
   rules: [
     {
       title: 'How it works',

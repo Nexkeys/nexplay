@@ -6,7 +6,7 @@ import '~/styles/howto.css';
  * the room lobby, the rules drawer and the public rules page) so nobody starts a game lost.
  */
 export function HowTo({ meta, tone = 'dark', title = 'How to play' }: { meta: GameMeta; tone?: 'dark' | 'light'; title?: string }) {
-  if (!meta.howTo?.length) return null;
+  if (!meta.howTo.length) return null;
   return (
     <section className={`howto ${tone}`} style={{ ['--tint' as string]: meta.colour }} aria-label={`How to play ${meta.name}`}>
       <h2>{title}</h2>

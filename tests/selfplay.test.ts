@@ -9,6 +9,8 @@ import { rps } from '~/engine/games/rps';
 import { wordRace } from '~/engine/games/word-race';
 import { quickMath } from '~/engine/games/quick-math';
 import { trivia } from '~/engine/games/trivia';
+import { ludo } from '~/engine/games/ludo';
+import { arena } from '~/engine/games/arena';
 
 /** Plays a full game with bots only, advancing a fake clock, and checks every bot move is legal. */
 function selfPlay(game: AnyGame, config: Record<string, unknown>, count: number, levels: BotLevel[], seed: number) {
@@ -57,7 +59,11 @@ const cases: [AnyGame, Record<string, unknown>, number][] = [
   [quickMath, { mode: 'sprint', level: 'hard', questions: 10 }, 5],
   [quickMath, { mode: 'make24', level: 'medium', questions: 4 }, 3],
   [trivia, { pack: 'naija', questions: 8 }, 6],
-  [trivia, { pack: 'mixed', questions: 10 }, 2]
+  [trivia, { pack: 'mixed', questions: 10 }, 2],
+  [ludo, {}, 2],
+  [ludo, { captureFirst: true }, 4],
+  [arena, { length: 'short' }, 4],
+  [arena, { length: 'short' }, 8]
 ];
 
 describe('every game finishes with legal bot moves', () => {
