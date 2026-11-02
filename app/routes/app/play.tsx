@@ -9,6 +9,7 @@ import { useIdentity } from '~/lib/identity';
 import { CODE_LENGTH, createRoom, isCode, normaliseCode, sweepExpiredRooms } from '~/lib/rooms';
 import { dailyGame } from '~/lib/stats';
 import { useProfile } from './layout';
+import { ScrollLock } from '~/lib/scrollLock';
 
 const FILTERS = [
   { id: 'all', label: 'All games' },
@@ -200,6 +201,7 @@ function GameSheet({ game, busy, onClose, onHost }: { game: GameMeta | 'pick'; b
   if (game === 'pick') return <PickSheet busy={busy} onClose={onClose} onHost={onHost} />;
   return (
     <motion.div className="sheet-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <ScrollLock />
       <motion.div
         className="sheet"
         role="dialog"
@@ -243,6 +245,7 @@ function GameSheet({ game, busy, onClose, onHost }: { game: GameMeta | 'pick'; b
 function PickSheet({ busy, onClose, onHost }: { busy: boolean; onClose(): void; onHost(g: GameId): void }) {
   return (
     <motion.div className="sheet-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <ScrollLock />
       <motion.div className="sheet" role="dialog" aria-modal="true" aria-label="Choose a game" initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 32 }} onClick={(e) => e.stopPropagation()}>
         <button className="gbtn close" onClick={onClose} aria-label="Close">
           <Icon name="close" />

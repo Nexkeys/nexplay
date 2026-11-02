@@ -57,6 +57,7 @@ body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
   min-height: 100dvh;
   background: var(--night);
   color: var(--cream);
@@ -114,6 +115,7 @@ ol {
 
 /* loading and crash screens */
 .boot {
+  min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-items: center;
@@ -142,6 +144,7 @@ ol {
   }
 }
 .crash {
+  min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-content: center;

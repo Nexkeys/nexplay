@@ -142,6 +142,7 @@
   height: calc(var(--ar-pt) * 0.8);
 }
 .ar-card.me {
+  background: linear-gradient(160deg, var(--walnut-2), var(--walnut-2) 70%);
   background: linear-gradient(160deg, color-mix(in srgb, var(--pc) 16%, var(--walnut-2)), var(--walnut-2) 70%);
   box-shadow: inset 0 0 0 1.5px rgba(232, 180, 80, 0.5), inset 0 -3px 0 rgba(0, 0, 0, 0.25);
 }
@@ -152,6 +153,7 @@
   background: var(--walnut-3);
 }
 .ar-card.target {
+  background: var(--walnut-2);
   background: color-mix(in srgb, var(--coral) 12%, var(--walnut-2));
   box-shadow: inset 0 0 0 2px var(--coral), 0 0 18px -6px var(--coral);
 }

@@ -354,6 +354,8 @@
   min-height: 0;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  /* minmax(0, 1fr): a long hand scrolls inside its row instead of widening the whole table */
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   border-radius: 28px;
   padding: clamp(10px, 2vw, 22px);
@@ -640,9 +642,14 @@
   color: #fff;
   box-shadow: none;
 }
+.board-whot > * {
+  min-width: 0;
+}
+/* Centred with auto margins, not justify-content: centring a row that scrolls pushes the first
+   cards off the left edge where they cannot be scrolled to. */
 .hand {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-end;
   min-height: clamp(110px, 17vw, 160px);
   padding: 18px 10px 4px;
@@ -658,6 +665,12 @@
   transform-origin: 50% 120%;
   border-radius: 12px;
   flex: none;
+}
+.hand > :first-child {
+  margin-left: auto;
+}
+.hand > :last-child {
+  margin-right: auto;
 }
 .hand-card.ok .wcard {
   box-shadow: inset 0 0 0 2px rgba(232, 180, 80, 0.8), 0 12px 22px -8px rgba(0, 0, 0, 0.6);
@@ -690,6 +703,7 @@
 }
 .c4-frame {
   position: relative;
+  width: min(100%, calc((100vh - 260px) * var(--cols) / var(--rows)), 760px);
   width: min(100%, calc((100dvh - 260px) * var(--cols) / var(--rows)), 760px);
   aspect-ratio: var(--cols) / var(--rows);
   border-radius: clamp(14px, 2.4vw, 26px);
@@ -787,6 +801,7 @@
 /* ===== Tic Tac Toe ===== */
 .ttt,
 .uttt {
+  width: min(100%, calc(100vh - 270px), 560px);
   width: min(100%, calc(100dvh - 270px), 560px);
   aspect-ratio: 1;
   display: grid;
@@ -1551,9 +1566,12 @@
     scrollbar-width: none;
     padding-top: 6px;
   }
-  .whot-opps[data-count='1'],
-  .whot-opps[data-count='2'] {
-    justify-content: center;
+  /* Centred by auto margins so a row wider than the screen still scrolls back to its first player. */
+  .whot-opps > :first-child {
+    margin-left: auto;
+  }
+  .whot-opps > :last-child {
+    margin-right: auto;
   }
   .whot-opp {
     padding: 6px 8px;
@@ -1616,14 +1634,41 @@
   }
   .ttt,
   .uttt {
+    width: min(100%, calc(100vh - 250px));
     width: min(100%, calc(100dvh - 250px));
   }
   .c4-frame {
+    width: min(100%, calc((100vh - 250px) * var(--cols) / var(--rows)));
     width: min(100%, calc((100dvh - 250px) * var(--cols) / var(--rows)));
   }
 }
 @media (max-height: 640px) and (min-width: 721px) {
   .math-q .prompt {
     font-size: 56px;
+  }
+}
+
+/* Short phones (iPhone SE, small Androids, or any phone with tall browser bars): tighter Rock Paper
+   Scissors so the picks sit on screen without scrolling. */
+@media (max-height: 640px) {
+  .board-rps {
+    gap: 8px;
+  }
+  .rps-arena {
+    min-height: 104px;
+    padding: 6px 10px;
+  }
+  .rps-hand .glyph {
+    font-size: 60px;
+  }
+  .rps-picks button {
+    padding: 8px 4px;
+    border-radius: 16px;
+  }
+  .rps-picks button span {
+    font-size: 30px;
+  }
+  .rps-foot {
+    gap: 8px;
   }
 }

@@ -6,6 +6,7 @@ import type { StageProps } from '~/lib/stage';
 import { firstName, seatOf } from '~/lib/stage';
 import { Shape } from '../Shape';
 import { PlayerChip, useChange } from '../game/common';
+import { ScrollLock } from '~/lib/scrollLock';
 
 type View = Omit<WhotState, 'hands' | 'market'> & { hands: (Card[] | number)[]; market: number };
 
@@ -221,6 +222,7 @@ export default function WhotBoard({ view, me, seats, actors, send, turnDeadline,
       <AnimatePresence>
         {asking && (
           <motion.div className="sheet-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setAsking(null)}>
+            <ScrollLock />
             <motion.div className="shape-pick" initial={{ y: 40, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 40 }} onClick={(e) => e.stopPropagation()}>
               <h3>I need…</h3>
               <div className="shapes">

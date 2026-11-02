@@ -14,6 +14,7 @@ import { isCode, joinRoom, normaliseCode, type RoomMeta } from '~/lib/rooms';
 import { firstName } from '~/lib/stage';
 import { useRoom, type RoomApi } from '~/lib/useRoom';
 import { HowTo } from '~/components/game/HowTo';
+import { ScrollLock } from '~/lib/scrollLock';
 
 export function meta({ params }: { params: { code?: string } }) {
   return [{ title: `Room ${params.code ?? ''} · NexPlay` }, { name: 'robots', content: 'noindex' }];
@@ -313,6 +314,7 @@ function Lobby({ room, onLeave }: { room: RoomApi; onLeave: () => void }) {
       <AnimatePresence>
         {choosing && (
           <motion.div className="sheet-back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setChoosing(false)}>
+            <ScrollLock />
             <motion.div className="sheet" initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60 }} onClick={(e) => e.stopPropagation()}>
               <button className="gbtn close" onClick={() => setChoosing(false)} aria-label="Close">
                 <Icon name="close" />
